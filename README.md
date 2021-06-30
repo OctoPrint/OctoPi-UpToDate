@@ -1,4 +1,4 @@
-# ✏ OctoPi-UpToDate
+# 🤖 OctoPi-UpToDate
 
 *The latest OctoPi release with the latest OctoPrint already included*
 
@@ -14,3 +14,10 @@ All that is done is running the equivalend of `pip install -U OctoPrint==<latest
 
 Sure, check out [CustoPiZer's README](https://github.com/OctoPrint/CustoPiZer) for 
 instructions on how to set up your own image build for modified but clean OctoPi images!
+
+## Will these images become available on the download page and in the Raspberry Pi Imager?
+
+That's the plan, but that first requires this automation to get some more testing. It's been wired up into OctoPrint's 
+release workflow now, so next OctoPrint release should show if it that triggers a build correctly. If that works,
+some further automation needs to be written to automatically update the web page with a link to the latest image
+and also generate a release file for the imager.
