@@ -8,7 +8,7 @@ and provides the resulting image ready to flash. Checkout the [releases](https:/
 ## How does this work?
 
 A simple update script is run via [CustoPiZer](https://github.com/OctoPrint/CustoPiZer).
-All that is done is running the equivalend of `pip install -U OctoPrint==<latest version>`.
+All that is done is running the equivalent of `pip install -U OctoPrint==<latest version>`.
 
 ## Can I do something like this as well?
 
@@ -21,3 +21,9 @@ That's the plan, but that first requires this automation to get some more testin
 release workflow now, so next OctoPrint release should show if it that triggers a build correctly. If that works,
 some further automation needs to be written to automatically update the web page with a link to the latest image
 and also generate a release file for the imager.
+
+## I have a problem, where's the issue tracker for this project?
+
+Nowhere, because this really is just a build automation.
+
+If you need support with OctoPrint or OctoPi, [please get in touch on the OctoPrint Community Forums](https://community.octoprint.org).
