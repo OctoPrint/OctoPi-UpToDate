@@ -1,0 +1,102 @@
+name: "CustoPiZe"
+
+on:
+  repository_dispatch:
+    types: [octoprint_release]
+  workflow_dispatch:
+    inputs:
+      octoprint_version:
+        description: "OctoPrint version (leave empty to use latest stable release)"
+        required: false
+        default: ''
+
+jobs:
+  build:
+    name: "Build"
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: "⬇ Checkout"
+      uses: actions/checkout@v2
+
+    - name: "🔎 Determine OctoPrint version"
+      run: |
+        if [[ "${{ github.event_name }}" = "repository_dispatch" ]]; then
+          OCTOPRINT_VERSION="${{ github.event.client_payload.version }}"
+        else
+          OCTOPRINT_VERSION="${{ github.event.inputs.octoprint_version }}"
+        fi
+
+        if [ -z "$OCTOPRINT_VERSION" ]; then
+          OCTOPRINT_VERSION=$(curl https://pypi.org/pypi/OctoPrint/json -s | jq -r '.info.version')
+        fi
+
+        # Make sure we have a published version
+        curl -fsSL --output /dev/null --head https://pypi.org/pypi/OctoPrint/$OCTOPRINT_VERSION/ || exit 1
+
+        echo "OCTOPRINT_VERSION=$OCTOPRINT_VERSION" >> $GITHUB_ENV
+
+    - name: "⬇ Download latest OctoPi"
+      id: octopi_download
+      run: |
+        mkdir build
+        cd build
+        wget https://octopi.octoprint.org/latest -O octopi.zip
+        
+        unzip octopi.zip
+        rm octopi.zip
+
+        IMAGE=$(ls *.img | head -n 1)
+        mv $IMAGE input.img
+
+        OCTOPI_VERSION=$(basename -s .img $IMAGE | awk -F"-" '{print $NF}')
+        echo "OCTOPI_VERSION=$OCTOPI_VERSION" >> $GITHUB_ENV
+
+    - name: "🏗 Run CustoPiZer"
+      run: |
+        sudo modprobe loop
+        docker run --rm --privileged \
+          -e OCTOPRINT_VERSION=${{ env.OCTOPRINT_VERSION }} \
+          -v ${{ github.workspace }}/build:/CustoPiZer/workspace \
+          -v ${{ github.workspace }}/scripts:/CustoPiZer/workspace/scripts \
+          ghcr.io/octoprint/custopizer:latest
+
+    - name: "📦 Package the image"
+      run: |
+        OCTOPI_VERSION="${{ env.OCTOPI_VERSION }}"
+        OCTOPRINT_VERSION="${{ env.OCTOPRINT_VERSION }}"
+        
+        IMAGE="octopi-$OCTOPI_VERSION-$OCTOPRINT_VERSION.img"
+        echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+        cd build
+        mv output.img $IMAGE
+        zip $IMAGE.zip $IMAGE
+        md5sum $IMAGE.zip > $IMAGE.zip.md5
+        sha256sum $IMAGE.zip > $IMAGE.zip.sha256
+    
+    - name: "📝 Prepare release"
+      run: |
+        RELEASE_NAME="OctoPi ${{ env.OCTOPI_VERSION }} with OctoPrint ${{ env.OCTOPRINT_VERSION }}"
+        echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
+
+        RELEASE_TAG="${{ env.OCTOPI_VERSION }}.op${{ env.OCTOPRINT_VERSION }}"
+        echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
+
+        RELEASE_BODY=""
+        (git rev-parse $RELEASE_TAG >/dev/null 2>&1) || RELEASE_BODY="Created with [CustoPiZer](https://github.com/OctoPrint/CustoPiZer)"
+
+        echo "RELEASE_BODY=$RELEASE_BODY" >> $GITHUB_ENV
+
+    - name: "🔖 Create release & attach assets"
+      uses: softprops/action-gh-release@v1
+      with:
+        name: "${{ env.RELEASE_NAME }}"
+        tag_name: "${{ env.RELEASE_TAG }}"
+        body: "${{ env.RELEASE_BODY }}"
+        files: |
+          build/${{ env.IMAGE }}.zip
+          build/${{ env.IMAGE }}.zip.md5
+          build/${{ env.IMAGE }}.zip.sha256
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
