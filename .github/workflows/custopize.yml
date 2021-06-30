@@ -94,6 +94,8 @@ jobs:
         name: "${{ env.RELEASE_NAME }}"
         tag_name: "${{ env.RELEASE_TAG }}"
         body: "${{ env.RELEASE_BODY }}"
+        prerelease: ${{ contains(env.OCTOPRINT_VERSION, 'rc') }}
+        fail_on_unmatched_files: true
         files: |
           build/${{ env.IMAGE }}.zip
           build/${{ env.IMAGE }}.zip.md5
