@@ -71,9 +71,24 @@ jobs:
 
         cd build
         mv output.img $IMAGE
+        md5sum $IMAGE > $IMAGE.md5
+        sha256sum $IMAGE > $IMAGE.sha256
+
+        IMAGE_SHA256=`cat $IMAGE.sha256`
+        echo "IMAGE_SHA256=$IMAGE_SHA256" >> $GITHUB_ENV
+
+        IMAGE_SIZE=`stat -c %s $IMAGE`
+        echo "IMAGE_SIZE=$IMAGE_SIZE" >> $GITHUB_ENV
+
         zip $IMAGE.zip $IMAGE
         md5sum $IMAGE.zip > $IMAGE.zip.md5
         sha256sum $IMAGE.zip > $IMAGE.zip.sha256
+
+        ZIP_SHA256=`cat $IMAGE.zip.sha256`
+        echo "ZIP_SHA256=$ZIP_SHA256" >> $GITHUB_ENV
+
+        ZIP_SIZE=`stat -c %s $IMAGE.zip`
+        echo "ZIP_SIZE=$ZIP_SIZE" >> $GITHUB_ENV
     
     - name: "📝 Prepare release"
       run: |
@@ -88,6 +103,32 @@ jobs:
 
         echo "RELEASE_BODY=$RELEASE_BODY" >> $GITHUB_ENV
 
+    - name: "📝 Prepare rpi-imager json snippet"
+      run: |
+        IMAGE_SHA256="${{ env.IMAGE_SHA256 }}"
+        ZIP_SHA256="${{ env.ZIP_SHA256 }}"
+        IMAGE_SIZE="${{ env.IMAGE_SIZE }}"
+        ZIP_SIZE="${{ env.ZIP_SIZE }}"
+
+        NAME="${{ env.RELEASE_NAME }}"
+        URL="https://github.com/OctoPrint/OctoPi-UpToDate/releases/download/${{ env.RELEASE_TAG }}/${{ env.IMAGE }}.zip"
+        DATE=`date '+%Y-%m-%d'`
+
+        cd build
+        cat > rpi-imager.json <<EOF
+        {
+          "name": "$NAME",
+          "description": "A Raspberry Pi distribution for 3d printers. Ships OctoPrint ${{ env.OCTOPRINT_VERSION }} out-of-the-box.",
+          "url": "$URL",
+          "icon": "https://octopi.octoprint.org/rpi-imager.png",
+          "release_date": "$DATE",
+          "extract_size": $IMAGE_SIZE,
+          "extract_sha256": "$IMAGE_SHA256",
+          "image_download_size": $ZIP_SIZE,
+          "image_download_sha256": "$ZIP_SHA256"
+        }
+        EOF
+
     - name: "🔖 Create release & attach assets"
       uses: softprops/action-gh-release@v1
       with:
@@ -100,5 +141,6 @@ jobs:
           build/${{ env.IMAGE }}.zip
           build/${{ env.IMAGE }}.zip.md5
           build/${{ env.IMAGE }}.zip.sha256
+          build/rpi-imager.json
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
