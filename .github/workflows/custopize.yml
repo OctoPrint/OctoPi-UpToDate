@@ -74,7 +74,7 @@ jobs:
         md5sum $IMAGE > $IMAGE.md5
         sha256sum $IMAGE > $IMAGE.sha256
 
-        IMAGE_SHA256=`cat $IMAGE.sha256`
+        IMAGE_SHA256=`cat $IMAGE.sha256 | cut -d ' ' -f 1`
         echo "IMAGE_SHA256=$IMAGE_SHA256" >> $GITHUB_ENV
 
         IMAGE_SIZE=`stat -c %s $IMAGE`
@@ -84,7 +84,7 @@ jobs:
         md5sum $IMAGE.zip > $IMAGE.zip.md5
         sha256sum $IMAGE.zip > $IMAGE.zip.sha256
 
-        ZIP_SHA256=`cat $IMAGE.zip.sha256`
+        ZIP_SHA256=`cat $IMAGE.zip.sha256 | cut -d ' ' -f 1`
         echo "ZIP_SHA256=$ZIP_SHA256" >> $GITHUB_ENV
 
         ZIP_SIZE=`stat -c %s $IMAGE.zip`
