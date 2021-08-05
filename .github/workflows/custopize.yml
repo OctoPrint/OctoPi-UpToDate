@@ -206,18 +206,18 @@ jobs:
         }
         EOF
 
-    #- name: "🔖 Create release & attach assets"
-    #  uses: softprops/action-gh-release@v1
-    #  with:
-    #    name: "${{ env.RELEASE_NAME }}"
-    #    tag_name: "${{ env.RELEASE_TAG }}"
-    #    body: "${{ env.RELEASE_BODY }}"
-    #    prerelease: ${{ contains(env.OCTOPRINT_VERSION, 'rc') }}
-    #    fail_on_unmatched_files: true
-    #    files: |
-    #      build/${{ env.IMAGE }}.zip
-    #      build/${{ env.IMAGE }}.zip.md5
-    #      build/${{ env.IMAGE }}.zip.sha256
-    #      build/rpi-imager.json
-    #  env:
-    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: "🔖 Create release & attach assets"
+      uses: softprops/action-gh-release@v1
+      with:
+        name: "${{ env.RELEASE_NAME }}"
+        tag_name: "${{ env.RELEASE_TAG }}"
+        body: "${{ env.RELEASE_BODY }}"
+        prerelease: ${{ contains(env.OCTOPRINT_VERSION, 'rc') }}
+        fail_on_unmatched_files: true
+        files: |
+          build/${{ env.IMAGE }}.zip
+          build/${{ env.IMAGE }}.zip.md5
+          build/${{ env.IMAGE }}.zip.sha256
+          build/rpi-imager.json
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
