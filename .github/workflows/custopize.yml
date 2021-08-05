@@ -2,9 +2,13 @@ name: "CustoPiZe"
 
 on:
   repository_dispatch:
-    types: [octoprint_release]
+    types: [octopi_release, octoprint_release]
   workflow_dispatch:
     inputs:
+      octopi_version:
+        description: "OctoPi version (leave empty to use latest stable release)"
+        required: false
+        default: ''
       octoprint_version:
         description: "OctoPrint version (leave empty to use latest stable release)"
         required: false
@@ -18,6 +22,80 @@ jobs:
 
     - name: "⬇ Checkout"
       uses: actions/checkout@v2
+
+    - name: "🔎 Determine OctoPi version"
+      uses: actions/github-script@v4
+      with:
+        script: |
+          let release = null;
+
+          let version = '';
+          if (context.eventName === "respository_dispatch" && context.payload.type === "octopi_release") {
+            version = context.payload.client_payload.version;
+          } else if (context.eventName === "workflow_dispatch") {
+            version = context.payload.inputs.octopi_version;
+          }
+
+          if (version) {
+            const query = `query {
+              repository(name: "guysoft", owner: "Octopi") {
+                release(tagName:"${version}") {
+                  tagName
+                  releaseAssets(first:5) {
+                    nodes {
+                      name
+                      downloadUrl
+                    }
+                  }
+                }
+              }
+            }`;
+
+            const result = await github.graphql(query);
+            console.log({result});
+
+            release = result.repository.release;
+
+          } else {
+            const query = `query {
+              repository(owner:"guysoft", name:"OctoPi") {
+                latestRelease {
+                  tagName
+                  releaseAssets(first:5) {
+                    nodes {
+                      name
+                      downloadUrl
+                    }
+                  }
+                }
+              }
+            }`;
+
+            const result = await github.graphql(query);
+            console.log({result});
+
+            release = result.repository.latestRelease;
+          }
+
+          if (!release || !release.tagName || !release.releaseAssets || !release.releaseAssets.nodes) core.setFailed("Could not find OctoPi release");
+
+          const octopiVersion = release.tagName;
+
+          let octopiUrl = null;
+          for (const asset of release.releaseAssets.nodes) {
+            if (asset.name.startsWith("octopi-") && asset.name.endsWith(".zip")) {
+              octopiUrl = asset.downloadUrl;
+              break;
+            }
+          }
+
+          if (!octopiUrl) core.setFailed("Could not find OctoPi download URL");
+
+          console.log(`OctoPi version: ${octopiVersion}`)
+          console.log(`OctoPi download URL: ${octopiUrl}`)
+
+          core.exportVariable("OCTOPI_VERSION", octopiVersion)
+          core.exportVariable("OCTOPI_URL", octopiUrl)
 
     - name: "🔎 Determine OctoPrint version"
       run: |
@@ -34,23 +112,22 @@ jobs:
         # Make sure we have a published version
         curl -fsSL --output /dev/null --head https://pypi.org/pypi/OctoPrint/$OCTOPRINT_VERSION/ || exit 1
 
+        echo "OctoPrint version: $OCTOPRINT_VERSION"
+
         echo "OCTOPRINT_VERSION=$OCTOPRINT_VERSION" >> $GITHUB_ENV
 
-    - name: "⬇ Download latest OctoPi"
+    - name: "⬇ Download OctoPi"
       id: octopi_download
       run: |
         mkdir build
         cd build
-        wget https://octopi.octoprint.org/latest -O octopi.zip
+        wget ${{ env.OCTOPI_URL }} -O octopi.zip
         
         unzip octopi.zip
         rm octopi.zip
 
         IMAGE=$(ls *.img | head -n 1)
         mv $IMAGE input.img
-
-        OCTOPI_VERSION=$(basename -s .img $IMAGE | awk -F"-" '{print $NF}')
-        echo "OCTOPI_VERSION=$OCTOPI_VERSION" >> $GITHUB_ENV
 
     - name: "🏗 Run CustoPiZer"
       run: |
@@ -129,18 +206,18 @@ jobs:
         }
         EOF
 
-    - name: "🔖 Create release & attach assets"
-      uses: softprops/action-gh-release@v1
-      with:
-        name: "${{ env.RELEASE_NAME }}"
-        tag_name: "${{ env.RELEASE_TAG }}"
-        body: "${{ env.RELEASE_BODY }}"
-        prerelease: ${{ contains(env.OCTOPRINT_VERSION, 'rc') }}
-        fail_on_unmatched_files: true
-        files: |
-          build/${{ env.IMAGE }}.zip
-          build/${{ env.IMAGE }}.zip.md5
-          build/${{ env.IMAGE }}.zip.sha256
-          build/rpi-imager.json
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #- name: "🔖 Create release & attach assets"
+    #  uses: softprops/action-gh-release@v1
+    #  with:
+    #    name: "${{ env.RELEASE_NAME }}"
+    #    tag_name: "${{ env.RELEASE_TAG }}"
+    #    body: "${{ env.RELEASE_BODY }}"
+    #    prerelease: ${{ contains(env.OCTOPRINT_VERSION, 'rc') }}
+    #    fail_on_unmatched_files: true
+    #    files: |
+    #      build/${{ env.IMAGE }}.zip
+    #      build/${{ env.IMAGE }}.zip.md5
+    #      build/${{ env.IMAGE }}.zip.sha256
+    #      build/rpi-imager.json
+    #  env:
+    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
