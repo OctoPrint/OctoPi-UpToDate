@@ -38,7 +38,7 @@ jobs:
 
           if (version) {
             const query = `query {
-              repository(name: "guysoft", owner: "Octopi") {
+              repository(owner: "guysoft", name: "Octopi") {
                 release(tagName:"${version}") {
                   tagName
                   releaseAssets(first:5) {
