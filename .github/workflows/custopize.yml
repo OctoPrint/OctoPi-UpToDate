@@ -32,11 +32,15 @@ jobs:
           let version = '';
           if (context.eventName === "respository_dispatch" && context.payload.type === "octopi_release") {
             version = context.payload.client_payload.version;
+            console.log(`Version from repository dispatch: ${version}`);
           } else if (context.eventName === "workflow_dispatch") {
             version = context.payload.inputs.octopi_version;
+            console.log(`Version from workflow dispatch: ${version}`);
           }
 
           if (version) {
+            console.log(`Fetching release of ${version}`);
+
             const query = `query {
               repository(owner: "guysoft", name: "Octopi") {
                 release(tagName:"${version}") {
@@ -57,6 +61,8 @@ jobs:
             release = result.repository.release;
 
           } else {
+            console.log("Fetching latest release");
+
             const query = `query {
               repository(owner:"guysoft", name:"OctoPi") {
                 latestRelease {
@@ -99,14 +105,17 @@ jobs:
 
     - name: "🔎 Determine OctoPrint version"
       run: |
-        if [[ "${{ github.event_name }}" = "repository_dispatch" ]]; then
+        if [[ "${{ github.event_name }}" = "repository_dispatch" && "${{ github.event.client_payload.type }}" = "octopi_release" ]]; then
           OCTOPRINT_VERSION="${{ github.event.client_payload.version }}"
+          echo "Version from repository dispatch: $OCTOPRINT_VERSION"
         else
           OCTOPRINT_VERSION="${{ github.event.inputs.octoprint_version }}"
+          echo "Version from workflow dispatch: $OCTOPRINT_VERSION"
         fi
 
         if [ -z "$OCTOPRINT_VERSION" ]; then
           OCTOPRINT_VERSION=$(curl https://pypi.org/pypi/OctoPrint/json -s | jq -r '.info.version')
+          echo "Version from PyPI: $OCTOPRINT_VERSION"
         fi
 
         # Make sure we have a published version
@@ -130,15 +139,13 @@ jobs:
         mv $IMAGE input.img
 
     - name: "🏗 Run CustoPiZer"
-      run: |
-        sudo modprobe loop
-        docker run --rm --privileged \
-          -e OCTOPRINT_VERSION=${{ env.OCTOPRINT_VERSION }} \
-          -v ${{ github.workspace }}/build:/CustoPiZer/workspace \
-          -v ${{ github.workspace }}/scripts:/CustoPiZer/workspace/scripts \
-          ghcr.io/octoprint/custopizer:latest
-
-    - name: "📦 Package the image"
+      uses: OctoPrint/CustoPiZer@main
+      with:
+        workspace: "${{ github.workspace }}/build"
+        scripts:  "${{ github.workspace }}/scripts"
+        environment: '{ "OCTOPRINT_VERSION": "${{ env.OCTOPRINT_VERSION }}" }'
+    
+    - name: "✏ Rename image"
       run: |
         OCTOPI_VERSION="${{ env.OCTOPI_VERSION }}"
         OCTOPRINT_VERSION="${{ env.OCTOPRINT_VERSION }}"
@@ -148,25 +155,7 @@ jobs:
 
         cd build
         mv output.img $IMAGE
-        md5sum $IMAGE > $IMAGE.md5
-        sha256sum $IMAGE > $IMAGE.sha256
 
-        IMAGE_SHA256=`cat $IMAGE.sha256 | cut -d ' ' -f 1`
-        echo "IMAGE_SHA256=$IMAGE_SHA256" >> $GITHUB_ENV
-
-        IMAGE_SIZE=`stat -c %s $IMAGE`
-        echo "IMAGE_SIZE=$IMAGE_SIZE" >> $GITHUB_ENV
-
-        zip $IMAGE.zip $IMAGE
-        md5sum $IMAGE.zip > $IMAGE.zip.md5
-        sha256sum $IMAGE.zip > $IMAGE.zip.sha256
-
-        ZIP_SHA256=`cat $IMAGE.zip.sha256 | cut -d ' ' -f 1`
-        echo "ZIP_SHA256=$ZIP_SHA256" >> $GITHUB_ENV
-
-        ZIP_SIZE=`stat -c %s $IMAGE.zip`
-        echo "ZIP_SIZE=$ZIP_SIZE" >> $GITHUB_ENV
-    
     - name: "📝 Prepare release"
       run: |
         RELEASE_NAME="OctoPi ${{ env.OCTOPI_VERSION }} with OctoPrint ${{ env.OCTOPRINT_VERSION }}"
@@ -180,31 +169,24 @@ jobs:
 
         echo "RELEASE_BODY=$RELEASE_BODY" >> $GITHUB_ENV
 
-    - name: "📝 Prepare rpi-imager json snippet"
-      run: |
-        IMAGE_SHA256="${{ env.IMAGE_SHA256 }}"
-        ZIP_SHA256="${{ env.ZIP_SHA256 }}"
-        IMAGE_SIZE="${{ env.IMAGE_SIZE }}"
-        ZIP_SIZE="${{ env.ZIP_SIZE }}"
+    - name: "📦 Package the image"
+      id: package-image
+      uses: OctoPrint/actions/package-rpi-image@main
+      with:
+        image_path: "build/${{ env.IMAGE }}"
 
-        NAME="${{ env.RELEASE_NAME }}"
-        URL="https://github.com/OctoPrint/OctoPi-UpToDate/releases/download/${{ env.RELEASE_TAG }}/${{ env.IMAGE }}.zip"
-        DATE=`date '+%Y-%m-%d'`
-
-        cd build
-        cat > rpi-imager.json <<EOF
-        {
-          "name": "$NAME",
-          "description": "A Raspberry Pi distribution for 3d printers. Ships OctoPrint ${{ env.OCTOPRINT_VERSION }} out-of-the-box.",
-          "url": "$URL",
-          "icon": "https://octopi.octoprint.org/rpi-imager.png",
-          "release_date": "$DATE",
-          "extract_size": $IMAGE_SIZE,
-          "extract_sha256": "$IMAGE_SHA256",
-          "image_download_size": $ZIP_SIZE,
-          "image_download_sha256": "$ZIP_SHA256"
-        }
-        EOF
+    - name: "🆕 Generate rpi-imager.json snippet"
+      uses: OctoPrint/actions/rpi-imager-snippet@main
+      with:
+        name: "${{ env.RELEASE_NAME }}"
+        description: "A Raspberry Pi distribution for 3d printers. Ships OctoPrint ${{ env.OCTOPRINT_VERSION }} out-of-the-box."
+        icon: "https://octopi.octoprint.org/rpi-imager.png"
+        url: "https://github.com/OctoPrint/OctoPi-UpToDate/releases/download/${{ env.RELEASE_TAG }}/${{ steps.package-image.outputs.zip_name }}"
+        output: "build/rpi-imager.json"
+        image_sha256: ${{ steps.package-image.outputs.image_sha256 }}
+        image_size: ${{ steps.package-image.outputs.image_size }}
+        zip_sha256: ${{ steps.package-image.outputs.zip_sha256 }}
+        zip_size: ${{ steps.package-image.outputs.zip_size }}
 
     - name: "🔖 Create release & attach assets"
       uses: softprops/action-gh-release@v1
@@ -215,9 +197,9 @@ jobs:
         prerelease: ${{ contains(env.OCTOPRINT_VERSION, 'rc') }}
         fail_on_unmatched_files: true
         files: |
-          build/${{ env.IMAGE }}.zip
-          build/${{ env.IMAGE }}.zip.md5
-          build/${{ env.IMAGE }}.zip.sha256
+          build/${{ steps.package-image.outputs.zip_name }}
+          build/${{ steps.package-image.outputs.zip_name }}.md5
+          build/${{ steps.package-image.outputs.zip_name }}.sha256
           build/rpi-imager.json
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
