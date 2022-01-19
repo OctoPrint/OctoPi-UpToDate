@@ -138,36 +138,42 @@ jobs:
         IMAGE=$(ls *.img | head -n 1)
         mv $IMAGE input.img
 
-    - name: "🏗 Run CustoPiZer"
-      uses: OctoPrint/CustoPiZer@main
-      with:
-        workspace: "${{ github.workspace }}/build"
-        scripts:  "${{ github.workspace }}/scripts"
-        environment: '{ "OCTOPRINT_VERSION": "${{ env.OCTOPRINT_VERSION }}" }'
-    
-    - name: "✏ Rename image"
-      run: |
-        OCTOPI_VERSION="${{ env.OCTOPI_VERSION }}"
-        OCTOPRINT_VERSION="${{ env.OCTOPRINT_VERSION }}"
-        
-        IMAGE="octopi-$OCTOPI_VERSION-$OCTOPRINT_VERSION.img"
-        echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-
-        cd build
-        mv output.img $IMAGE
-
     - name: "📝 Prepare release"
       run: |
         RELEASE_NAME="OctoPi ${{ env.OCTOPI_VERSION }} with OctoPrint ${{ env.OCTOPRINT_VERSION }}"
         echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
 
-        RELEASE_TAG="${{ env.OCTOPI_VERSION }}.op${{ env.OCTOPRINT_VERSION }}"
+        now=$(date +"%Y%m%d%H%M%S")
+        RELEASE_TAG="${{ env.OCTOPI_VERSION }}-${{ env.OCTOPRINT_VERSION }}-$now"
         echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
+        
+        # release body
 
-        RELEASE_BODY=""
-        (git rev-parse $RELEASE_TAG >/dev/null 2>&1) || RELEASE_BODY="Created with [CustoPiZer](https://github.com/OctoPrint/CustoPiZer)"
+        cat <<EOF > ./build/release.md
+  
+          * OctoPi ${{ env.OCTOPI_VERSION }}
+          * OctoPrint ${{ env.OCTOPRINT_VERSION }}
+          * Latest kernel & bootloader
+          
+        Created with [CustoPiZer](https://github.com/OctoPrint/CustoPiZer)
+        EOF
 
-        echo "RELEASE_BODY=$RELEASE_BODY" >> $GITHUB_ENV
+    - name: "🏗 Run CustoPiZer"
+      uses: OctoPrint/CustoPiZer@main
+      with:
+        workspace: "${{ github.workspace }}/build"
+        scripts:  "${{ github.workspace }}/scripts"
+        environment: '{ "OCTOPRINT_VERSION": "${{ env.OCTOPRINT_VERSION }}", "RELEASE_TAG": "${{ env.RELEASE_TAG }}" }'
+    
+    - name: "✏ Rename image"
+      run: |
+        RELEASE_TAG="${{ env.RELEASE_TAG }}"
+        
+        IMAGE="octopi-$RELEASE_TAG.img"
+        echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+        cd build
+        mv output.img $IMAGE
 
     - name: "📦 Package the image"
       id: package-image
@@ -193,7 +199,7 @@ jobs:
       with:
         name: "${{ env.RELEASE_NAME }}"
         tag_name: "${{ env.RELEASE_TAG }}"
-        body: "${{ env.RELEASE_BODY }}"
+        body_path: "build/release.md"
         prerelease: ${{ contains(env.OCTOPRINT_VERSION, 'rc') }}
         fail_on_unmatched_files: true
         files: |

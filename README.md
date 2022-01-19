@@ -2,13 +2,16 @@
 
 *The latest OctoPi release with the latest OctoPrint already included*
 
-This repository automatically updates the OctoPrint installation on the latest OctoPi image
+This repository automatically updates the OctoPrint installation, kernel and bootloader on the latest OctoPi image
 and provides the resulting image ready to flash. Checkout the [releases](https://github.com/OctoPrint/OctoPi-UpToDate/releases).
 
 ## How does this work?
 
-A simple update script is run via [CustoPiZer](https://github.com/OctoPrint/CustoPiZer).
-All that is done is running the equivalent of `pip install -U OctoPrint==<latest version>`.
+A bunch of simple update scripts are run via [CustoPiZer](https://github.com/OctoPrint/CustoPiZer):
+
+  * `01-update-octoprint`: Updates OctoPrint to the latest version
+  * `02-update-boot`: Updates bootloader and kernel to the latest version
+  * `99-write-build`: Writes the build tag to `/etc/octopiuptodate-build`
 
 ## Can I do something like this as well?
 
