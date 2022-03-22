@@ -18,6 +18,10 @@ jobs:
   build:
     name: "Build"
     runs-on: ubuntu-latest
+    outputs:
+      octoprint-version: ${{ env.OCTOPRINT_VERSION }}
+      octopi-version: ${{ env.OCTOPI_VERSION }}
+      tag: ${{ env.RELEASE_TAG }}
     steps:
 
     - name: "⬇ Checkout"
@@ -140,10 +144,11 @@ jobs:
 
     - name: "📝 Prepare release"
       run: |
-        RELEASE_NAME="OctoPi ${{ env.OCTOPI_VERSION }} with OctoPrint ${{ env.OCTOPRINT_VERSION }}"
+        now=$(date +"%Y%m%d%H%M%S")
+
+        RELEASE_NAME="OctoPi ${{ env.OCTOPI_VERSION }} with OctoPrint ${{ env.OCTOPRINT_VERSION }} (build $now)"
         echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
 
-        now=$(date +"%Y%m%d%H%M%S")
         RELEASE_TAG="${{ env.OCTOPI_VERSION }}-${{ env.OCTOPRINT_VERSION }}-$now"
         echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
         
@@ -156,6 +161,8 @@ jobs:
           * Latest kernel & bootloader
           
         Created with [CustoPiZer](https://github.com/OctoPrint/CustoPiZer)
+
+        <!-- mark:untested -->
         EOF
 
     - name: "🏗 Run CustoPiZer"
@@ -209,3 +216,39 @@ jobs:
           build/rpi-imager.json
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    name: "Deploy"
+    runs-on: ubuntu-latest
+    needs: build
+    environment: live
+    steps:
+
+      - uses: actions/github-script@v5
+        name: "✔ Mark release as tested"
+        env:
+          TAG: "${{ needs.build.outputs.tag }}"
+        with:
+          script: |
+            const { TAG } = process.env;
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const marker = "<!-- mark:untested -->";
+
+            github.rest.repos.getReleaseByTag({
+              owner: owner,
+              repo: repo,
+              tag: TAG
+            }).then(release => {
+              release.data.body = release.data.body.replace(marker, "")
+              return github.rest.repos.updateRelease({
+                owner: owner,
+                repo: repo,
+                release_id: release.data.id,
+                body: release.data.body
+              })
+            }).catch(err => {
+              console.error(err)
+              throw new Error(`Could not update release ${TAG}`)
+            })
