@@ -236,7 +236,9 @@ jobs:
           token: ${{ secrets.DISPATCH_TOKEN }}
           workflow: Test against testrig
           repo: OctoPrint/devtools
+          ref: main
           inputs: '{"image": "${{ needs.build.outputs.image-url }}", "target": "pic"}'
+          repost-logs: true
 
   deploy:
     name: "Deploy"
