@@ -22,6 +22,8 @@ jobs:
       octoprint-version: ${{ env.OCTOPRINT_VERSION }}
       octopi-version: ${{ env.OCTOPI_VERSION }}
       tag: ${{ env.RELEASE_TAG }}
+      image-zip: ${{ env.IMAGE_ZIP }}
+      image-url: ${{ env.IMAGE_URL }}
     steps:
 
     - name: "⬇ Checkout"
@@ -189,13 +191,18 @@ jobs:
       with:
         image_path: "build/${{ env.IMAGE }}"
 
+    - name: 📨 Export zip name and URL to env
+      run: |
+        echo "IMAGE_ZIP=${{ steps.package-image.outputs.zip_name }}" >> $GITHUB_ENV
+        echo "IMAGE_URL=https://github.com/OctoPrint/OctoPi-UpToDate/releases/download/${{ env.RELEASE_TAG }}/${{ steps.package-image.outputs.zip_name }}" >> $GITHUB_ENV
+
     - name: "🆕 Generate rpi-imager.json snippet"
       uses: OctoPrint/actions/rpi-imager-snippet@main
       with:
         name: "${{ env.RELEASE_NAME }}"
         description: "A Raspberry Pi distribution for 3d printers. Ships OctoPrint ${{ env.OCTOPRINT_VERSION }} out-of-the-box."
         icon: "https://octopi.octoprint.org/rpi-imager.png"
-        url: "https://github.com/OctoPrint/OctoPi-UpToDate/releases/download/${{ env.RELEASE_TAG }}/${{ steps.package-image.outputs.zip_name }}"
+        url: "${{ env.IMAGE_URL }}"
         output: "build/rpi-imager.json"
         image_sha256: ${{ steps.package-image.outputs.image_sha256 }}
         image_size: ${{ steps.package-image.outputs.image_size }}
@@ -211,17 +218,30 @@ jobs:
         prerelease: ${{ contains(env.OCTOPRINT_VERSION, 'rc') }}
         fail_on_unmatched_files: true
         files: |
-          build/${{ steps.package-image.outputs.zip_name }}
-          build/${{ steps.package-image.outputs.zip_name }}.md5
-          build/${{ steps.package-image.outputs.zip_name }}.sha256
+          build/${{ env.IMAGE_ZIP }}
+          build/${{ env.IMAGE_ZIP }}.md5
+          build/${{ env.IMAGE_ZIP }}.sha256
           build/rpi-imager.json
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  test:
+    name: "Test"
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 🏃‍♀️ Run test against testrig
+        uses: jonas-schievink/workflow-proxy@v1
+        with:
+          token: ${{ secrets.DISPATCH_TOKEN }}
+          workflow: Test against testrig
+          repo: OctoPrint/devtools
+          inputs: '{"image": "${{ needs.build.outputs.image-url }}", "target": "pic"}'
+
   deploy:
     name: "Deploy"
     runs-on: ubuntu-latest
-    needs: build
+    needs: test
     environment: live
     steps:
 
