@@ -4,16 +4,36 @@
 ### MacOSX users: If you use Textedit to edit this file make sure to use 
 ### "plain text format" and "disable smart quotes" in "Textedit > Preferences"
 
-### Heads-up: The "input_raspicam" input module of mjpg-streamer is no longer supported.
-### Raspicam support is now available on the "input_uvc" module.
+### Heads-up: As of OctoPi 1.0.0, the raspi input option has been removed. Instead 
+### there's now the libcamera input option. Additionally, USB webcams are now 
+### configured through camera_uvc_options instead of camera_usb_options.
 
-### Additional options to supply to MJPG Streamer for the USB camera
+### Configure which camera to use
+#
+# Available options are:
+# - auto: tries libcamera if detected, otherwise tries first uvc if available
+# - uvc: only tries uvc
+# - libcamera: only tries libcamera
+#
+# Defaults to auto
+#
+#camera="auto"
+
+### Additional options to supply to MJPG Streamer for libcamera devices
 #
 # See https://faq.octoprint.org/mjpg-streamer-config for available options
 #
 # Defaults to a resolution of 640x480 px and a framerate of 10 fps
 #
-#camera_usb_options="-r 640x480 -f 10"
+#camera_libcamera_options="-r 640x480 -f 10"
+
+### Additional options to supply to MJPG Streamer for uvc devices
+#
+# See https://faq.octoprint.org/mjpg-streamer-config for available options
+#
+# Defaults to a resolution of 640x480 px and a framerate of 10 fps
+#
+#camera_uvc_options="-r 640x480 -f 10"
 
 ### Additional webcam devices known to cause problems with -f
 #
