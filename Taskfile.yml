@@ -1,0 +1,10 @@
+version: "3"
+
+tasks:
+  build:
+    cmds:
+      - |
+        {{if eq OS "windows"}}powershell {{end}}docker run --rm --privileged -v {{.USER_WORKING_DIR | toSlash}}/workspace:/CustoPiZer/workspace -v {{.USER_WORKING_DIR | toSlash}}/scripts:/CustoPiZer/workspace/scripts ghcr.io/octoprint/custopizer:latest
+    preconditions:
+      - test -d workspace
+      - test -f workspace/input.img

@@ -14,6 +14,21 @@ A bunch of simple update scripts are run via [CustoPiZer](https://github.com/Oct
   * `80-install-user-fix`: Installs a compatibility layer to support renaming the `pi` user, if needed.
   * `99-write-build`: Writes the build tag to `/etc/octopiuptodate-build`
 
+## How do I run this?
+
+There's a [Taskfile](https://taskfile.dev) in this repository that you can use to run the update scripts locally.
+
+  - Install [Taskfile](https://taskfile.dev/installation/)
+  - Install [Docker]()
+  - Create a `workspace` directory and place your `input.img` in that
+  - Run `task build`
+
+Alternatively, you can also manually run `docker`:
+
+```
+docker run --rm --privileged -v $(pwd)/workspace:/CustoPiZer/workspace $(pwd)/scripts:/CustoPiZer/workspace/scripts ghcr.io/octoprint/custopizer:latest
+```
+
 ## Can I do something like this as well?
 
 Sure, check out [CustoPiZer's README](https://github.com/OctoPrint/CustoPiZer) for 
