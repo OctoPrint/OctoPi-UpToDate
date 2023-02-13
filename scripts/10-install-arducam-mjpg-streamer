@@ -1,0 +1,59 @@
+set -x
+set -e
+
+export LC_ALL=C
+
+source /common.sh
+install_cleanup_trap
+
+# no need to install if we already have it
+[ -f "/opt/mjpg-streamer/input_libcamera.so" ] && exit 0
+
+install_dir=/opt/mjpg-streamer
+[ -d $install_dir ] && rm -rf $install_dir
+apt-get install --yes libcamera-dev libjpeg-dev cmake libboost-program-options-dev libdrm-dev libexif-dev
+
+cd /home/pi
+
+curl -L -o mjpg-streamer-master.zip https://github.com/ArduCAM/mjpg-streamer/archive/refs/heads/master.zip
+unzip mjpg-streamer-master.zip
+rm mjpg-streamer-master.zip
+
+pushd mjpg-streamer-master/mjpg-streamer-experimental
+  build_dir=_build
+  mkdir -p $build_dir
+  pushd $build_dir
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+  popd
+
+  make -j $(nproc) -C $build_dir
+
+  mkdir -p $install_dir
+
+  install -m 755 $build_dir/mjpg_streamer $install_dir
+  find $build_dir -name "*.so" -type f -exec install -m 644 {} $install_dir \;
+
+  # copy bundled web folder
+  cp -a -r ./www $install_dir
+  chmod 755 $install_dir/www
+  chmod -R 644 $install_dir/www
+
+  # create our custom web folder and add a minimal index.html to it
+  mkdir $install_dir/www-octopi
+  pushd $install_dir/www-octopi
+    cat <<EOT >> index.html
+<html>
+<head><title>mjpg_streamer test page</title></head>
+<body>
+<h1>Snapshot</h1>
+<p>Refresh the page to refresh the snapshot</p>
+<img src="./?action=snapshot" alt="Snapshot">
+<h1>Stream</h1>
+<img src="./?action=stream" alt="Stream">
+</body>
+</html>
+EOT
+  popd
+popd
+
+rm -rf mjpg-streamer-master
