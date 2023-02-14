@@ -1,0 +1,31 @@
+[Unit]
+Description=camera-streamer libcamera
+After=network.target
+ConditionPathExistsGlob=/sys/bus/i2c/drivers/*/*/video4linux
+
+[Service]
+EnvironmentFile=/boot/camera-streamer.conf
+ExecStart=/usr/local/bin/camera-streamer \
+  -camera-type=libcamera \
+  ; YUYV offers best quality in camera-streamer
+  -camera-format=YUYV \
+  -camera-width=${LIBCAMERA_WIDTH} -camera-height=${LIBCAMERA_HEIGHT} \
+  -camera-fps=${LIBCAMERA_FRAMERATE} \
+  -camera-nbufs=2 \
+  -camera-high_res_factor=1 \
+  -camera-low_res_factor=2 \
+  ${LIBCAMERA_OPTIONS}
+
+DynamicUser=yes
+SupplementaryGroups=video i2c
+Restart=always
+RestartSec=10
+Nice=10
+IOSchedulingClass=idle
+IOSchedulingPriority=7
+CPUWeight=20
+AllowedCPUs=1-2
+MemoryMax=250M
+
+[Install]
+WantedBy=multi-user.target

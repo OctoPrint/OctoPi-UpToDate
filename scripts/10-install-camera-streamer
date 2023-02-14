@@ -1,0 +1,44 @@
+set -x
+set -e
+
+export LC_ALL=C
+
+source /common.sh
+install_cleanup_trap
+
+apt-get install --yes libavformat-dev libavutil-dev libavcodec-dev libcamera-dev liblivemedia-dev v4l-utils pkg-config xxd build-essential cmake libssl-dev
+
+cp /files/camera-streamer/camera-streamer.zip /tmp/camera-streamer.zip
+unzip /tmp/camera-streamer.zip -d /tmp/camera-streamer
+rm /tmp/camera-streamer.zip
+
+pushd /tmp/camera-streamer/camera-streamer
+  make -j$(nproc)
+  make install
+popd
+rm -rf /tmp/camera-streamer
+
+sed -i 's/^camera_auto_detect=0/camera_auto_detect=1/' /boot/config.txt
+
+cp /files/camera-streamer/camera-streamer.conf /boot/camera-streamer.conf
+
+cp /files/camera-streamer/camera-streamer-libcamera.service /etc/systemd/system/camera-streamer-libcamera.service
+systemctl enable camera-streamer-libcamera.service
+
+cp /files/camera-streamer/camera-streamer-usb.service /etc/systemd/system/camera-streamer-usb.service
+systemctl enable camera-streamer-usb.service
+
+cp /files/camera-streamer/camera-streamer-usb.path /etc/systemd/system/camera-streamer-usb.path
+systemctl enable camera-streamer-usb.path
+
+# prepare multicam template folder
+cp /files/camera-streamer/camera-streamer-usb-multi@.service /etc/systemd/system/camera-streamer-usb-multi@.service
+systemctl enable camera-streamer-usb.service
+
+mkdir -p /boot/camera-streamer.conf.d
+cp /files/camera-streamer/multi-example.conf /boot/camera-streamer.conf.d/example.conf
+
+# clean up the old crap
+systemctl disable webcamd
+rm /root/bin/webcamd
+rm -rf /opt/mjpg-streamer
