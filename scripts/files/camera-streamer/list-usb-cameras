@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "Available USB camera devices:"
+for path in /dev/v4l/by-id/usb-*-video-index0; do
+    echo "  $path"
+done

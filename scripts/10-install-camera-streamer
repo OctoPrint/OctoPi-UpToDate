@@ -6,8 +6,10 @@ export LC_ALL=C
 source /common.sh
 install_cleanup_trap
 
+# install dependencies
 apt-get install --yes libavformat-dev libavutil-dev libavcodec-dev libcamera-dev liblivemedia-dev v4l-utils pkg-config xxd build-essential cmake libssl-dev
 
+# install camera-streamer
 cp /files/camera-streamer/camera-streamer.zip /tmp/camera-streamer.zip
 unzip /tmp/camera-streamer.zip -d /tmp/camera-streamer
 rm /tmp/camera-streamer.zip
@@ -18,25 +20,35 @@ pushd /tmp/camera-streamer/camera-streamer
 popd
 rm -rf /tmp/camera-streamer
 
+# enable camera auto-detection
 sed -i 's/^camera_auto_detect=0/camera_auto_detect=1/' /boot/config.txt
 
-cp /files/camera-streamer/camera-streamer.conf /boot/camera-streamer.conf
+# install default configs
+mkdir -p /boot/camera-streamer
+cp /files/camera-streamer/libcamera.conf /boot/camera-streamer/libcamera.conf
+cp /files/camera-streamer/usb.conf /boot/camera-streamer/usb.conf
 
+# install libcamera service
 cp /files/camera-streamer/camera-streamer-libcamera.service /etc/systemd/system/camera-streamer-libcamera.service
 systemctl enable camera-streamer-libcamera.service
 
-cp /files/camera-streamer/camera-streamer-usb.service /etc/systemd/system/camera-streamer-usb.service
-systemctl enable camera-streamer-usb.service
+# install USB camera service
+cp /files/camera-streamer/camera-streamer-control /root/bin/camera-streamer-control
+chmod +x /root/bin/camera-streamer-control
 
-cp /files/camera-streamer/camera-streamer-usb.path /etc/systemd/system/camera-streamer-usb.path
-systemctl enable camera-streamer-usb.path
+cp /files/camera-streamer/camera-streamer-usb@.service /etc/systemd/system/camera-streamer-usb@.service
+cp /files/camera-streamer/camera-streamer-usb@.path /etc/systemd/system/camera-streamer-usb@.path
+cp /files/camera-streamer/camera-streamer.service /etc/systemd/system/camera-streamer.service
 
-# prepare multicam template folder
-cp /files/camera-streamer/camera-streamer-usb-multi@.service /etc/systemd/system/camera-streamer-usb-multi@.service
-systemctl enable camera-streamer-usb.service
+systemctl enable camera-streamer.service
 
-mkdir -p /boot/camera-streamer.conf.d
-cp /files/camera-streamer/multi-example.conf /boot/camera-streamer.conf.d/example.conf
+# install helper scripts
+cp /files/camera-streamer/add-usb-camera /root/bin/add-usb-camera
+cp /files/camera-streamer/remove-usb-camera /root/bin/remove-usb-camera
+cp /files/camera-streamer/list-usb-cameras /root/bin/list-usb-cameras
+chmod +x /root/bin/add-usb-camera
+chmod +x /root/bin/remove-usb-camera
+chmod +x /root/bin/list-usb-cameras
 
 # clean up the old crap
 systemctl disable webcamd

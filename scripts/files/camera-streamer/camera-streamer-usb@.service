@@ -1,17 +1,19 @@
 [Unit]
-Description=camera-streamer libcamera
+Description=camera-streamer %i
 After=network.target
+After=camera-streamer-libcamera.service
+ConditionPathExistsGlob=/dev/v4l/by-id/usb-*-video-index0
 StartLimitIntervalSec=120
 StartLimitBurst=10
 
 [Service]
-EnvironmentFile=/boot/camera-streamer/libcamera.conf
-ExecCondition=/bin/sh -c "/usr/bin/libcamera-hello --list-cameras | grep -o '/base/soc/[^)]*'"
+EnvironmentFile=/boot/camera-streamer/%i.conf
+ExecCondition=/bin/sh -c "[ -e $DEVICE ]"
 ExecStart=/bin/sh -c "/usr/local/bin/camera-streamer \
   -http-port=${PORT} \
-  -camera-type=libcamera \
-  -camera-path=$(/usr/bin/libcamera-hello --list-cameras | grep -o '/base/soc/[^)]*') \
-  -camera-format=YUYV \
+  -camera-path="${DEVICE}" \
+  -camera-type=v4l2 \
+  -camera-format=${FORMAT} \
   -camera-width=${WIDTH} -camera-height=${HEIGHT} \
   -camera-fps=${FRAMERATE} \
   -camera-nbufs=2 \

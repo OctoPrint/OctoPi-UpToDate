@@ -1,0 +1,20 @@
+#!/bin/bash
+
+action=$1
+
+systemctl $action "camera-streamer-libcamera.service"
+
+# iterate over all the camera confs in /boot/camera-streamer
+for conf in /boot/camera-streamer/*.conf; do
+  # skip the libcamera.conf
+  if [ "$conf" = "/boot/camera-streamer/libcamera.conf" ]; then
+    continue
+  fi
+
+  # get the name of the camera
+  name=$(basename "$conf" .conf)
+
+  # enable the camera
+  systemctl $action "camera-streamer-usb@$name.path"
+  systemctl $action "camera-streamer-usb@$name.service"
+done

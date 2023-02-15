@@ -6,4 +6,4 @@ export LC_ALL=C
 source /common.sh
 install_cleanup_trap
 
-apt-get install --yes --only-upgrade libcamera-apps-lite
+apt-get install --yes libcamera-apps-lite

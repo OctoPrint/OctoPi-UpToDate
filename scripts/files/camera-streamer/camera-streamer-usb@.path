@@ -1,9 +1,9 @@
 [Unit]
-Description=camera-streamer usb autolaunch
+Description=camera-streamer %i autolaunch
+After=network.target
 
 [Path]
 PathExistsGlob=/dev/v4l/by-id/usb-*-video-index0
-Unit=camera-streamer-usb.service
 
 [Install]
 WantedBy=multi-user.target

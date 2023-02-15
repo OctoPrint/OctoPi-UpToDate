@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root/with sudo"
+  exit 1
+fi
+
+NAME=$1
+
+if [ -z "$NAME" ]; then
+  echo "Usage: $0 <name>"
+  exit 1
+fi
+
+if [ ! -e "/boot/camera-streamer/$NAME.conf" ]; then
+  echo "Camera $NAME does not exist"
+  exit 1
+fi
+
+systemctl stop camera-streamer-usb@$NAME.path
+systemctl stop camera-streamer-usb@$NAME.service
+rm /boot/camera-streamer/$NAME.conf

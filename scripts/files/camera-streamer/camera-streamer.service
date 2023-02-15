@@ -1,0 +1,14 @@
+[Unit]
+Description=camera-streamer arm usb
+After=network.target
+After=camera-streamer-libcamera
+
+[Service]
+Type=oneshot
+ExecStart=/root/bin/camera-streamer-control start
+ExecStop=/root/bin/camera-streamer-control stop
+ExecReload=/root/bin/camera-streamer-control restart
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
