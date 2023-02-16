@@ -1,7 +1,6 @@
 [Unit]
 Description=camera-streamer arm usb
 After=network.target
-After=camera-streamer-libcamera
 
 [Service]
 Type=oneshot

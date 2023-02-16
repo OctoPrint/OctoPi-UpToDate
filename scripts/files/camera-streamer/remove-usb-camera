@@ -17,6 +17,9 @@ if [ ! -e "/boot/camera-streamer/$NAME.conf" ]; then
   exit 1
 fi
 
-systemctl stop camera-streamer-usb@$NAME.path
-systemctl stop camera-streamer-usb@$NAME.service
+/root/bin/camera-streamer-control stop $NAME
+
 rm /boot/camera-streamer/$NAME.conf
+rm /run/systemd/system/camera-streamer-usb-$NAME.path || true
+rm -r /run/systemd/system/camera-streamer-usb@$NAME.service.d || true
+systemctl daemon-reload

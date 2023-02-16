@@ -2,13 +2,13 @@
 Description=camera-streamer %i
 After=network.target
 After=camera-streamer-libcamera.service
+ConditionPathExists=/boot/camera-streamer/%i.conf
 ConditionPathExistsGlob=/dev/v4l/by-id/usb-*-video-index0
 StartLimitIntervalSec=120
 StartLimitBurst=10
 
 [Service]
 EnvironmentFile=/boot/camera-streamer/%i.conf
-ExecCondition=/bin/sh -c "[ -e $DEVICE ]"
 ExecStart=/bin/sh -c "exec /usr/local/bin/camera-streamer \
   -http-port=${PORT} \
   -camera-path="${DEVICE}" \

@@ -1,8 +1,9 @@
 #!/bin/bash
 
 action=$1
+single=$2
 
-systemctl $action "camera-streamer-libcamera.service"
+[ -n "$single" ] || systemctl $action "camera-streamer-libcamera.service"
 
 # iterate over all the camera confs in /boot/camera-streamer
 for conf in /boot/camera-streamer/*.conf; do
@@ -14,7 +15,47 @@ for conf in /boot/camera-streamer/*.conf; do
   # get the name of the camera
   name=$(basename "$conf" .conf)
 
-  # enable the camera
-  systemctl $action "camera-streamer-usb@$name.path"
+  if [[ "$single" != "" ]] && [[ "$single" != "$name" ]]; then
+    # if we are only doing a single camera, skip the others
+    continue
+  fi
+
+  source $conf
+
+  if [[ "$action" == "start" ]] || [[ "$action" == "restart" ]]; then
+    # generate some additional files/config if we are starting this for the first time
+    reload="no"
+
+    # Add runtime path unit file that starts the service when the device is plugged in
+    path_dir="/run/systemd/system"
+    if [[ ! -e "$path_dir/camera-streamer-usb-$name.path" ]] || [[ ! $(grep -q "PathExists=$DEVICE" "$path_dir/camera-streamer-usb-$name.path") ]]; then
+      cat > "$path_dir/camera-streamer-usb-$name.path" <<EOF
+[Unit]
+Description=camera-streamer $name autolaunch
+After=network.target
+
+[Path]
+PathExists=$DEVICE
+Unit=camera-streamer-usb@$name.service
+EOF
+      reload="yes"
+    fi
+
+    # Add path dependency to service file via runtime override
+    override_dir="/run/systemd/system/camera-streamer-usb@$name.service.d"
+    override_conf="$override_dir/override.conf"
+    if [[ ! -e "$override_conf" ]] || [[! $(grep -q "ConditionPathExists=$DEVICE" "$override_conf") ]]; then
+      mkdir -p "$override_dir"
+      cat > "$override_conf" <<EOF
+[Unit]
+ConditionPathExists=$DEVICE
+EOF
+      reload="yes"
+    fi
+    [[ "$reload" == "yes" ]] && systemctl daemon-reload || true
+  fi
+
+  # do the action
+  systemctl $action "camera-streamer-usb-$name.path"
   systemctl $action "camera-streamer-usb@$name.service"
 done

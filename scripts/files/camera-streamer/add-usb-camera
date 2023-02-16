@@ -63,7 +63,7 @@ if [ ! -e "$DEVICE" ]; then
   exit 1
 fi
 
-sudo cat > /boot/camera-streamer/$NAME.conf <<EOF
+cat > /boot/camera-streamer/$NAME.conf <<EOF
 ### Options for USB based cameras
 
 # The port on which the webcam server for the camera should listen on.
@@ -82,11 +82,11 @@ HEIGHT=720
 # The framerate to set on the camera. Defaults to 15fps.
 FRAMERATE=15
 
-# Additional options. Leave at log-debug=0 if not needed.
-OPTIONS='-log-debug=0'
+# Additional options.
+OPTIONS=
 EOF
 
-sudo systemctl start camera-streamer-usb@$NAME.path
+/root/bin/camera-streamer-control restart $NAME
 
 echo "Camera $NAME added"
 echo
