@@ -2,17 +2,20 @@
 Description=camera-streamer %i
 After=network.target
 After=camera-streamer-libcamera.service
-ConditionPathExists=/boot/camera-streamer/%i.conf
+ConditionPathExists=/boot/camera-streamer/usb-%i.conf
 ConditionPathExistsGlob=/dev/v4l/by-id/usb-*-video-index0
+ConditionPathExists=/etc/octopi_streamer/mjpeg
 StartLimitIntervalSec=120
 StartLimitBurst=10
 
 [Service]
-EnvironmentFile=/boot/camera-streamer/%i.conf
+EnvironmentFile=/boot/camera-streamer/usb-%i.conf
+ExecCondition=/bin/sh -c "[ -e $DEVICE ]"
+ExecCondition=/bin/sh -c "! ss -ltn src :$PORT | grep -q LISTEN"
 ExecStart=/bin/sh -c "exec /usr/local/bin/camera-streamer \
   -http-port=${PORT} \
-  -camera-path="${DEVICE}" \
   -camera-type=v4l2 \
+  -camera-path=$(ls -b $DEVICE | head -n1) \
   -camera-format=${FORMAT} \
   -camera-width=${WIDTH} -camera-height=${HEIGHT} \
   -camera-fps=${FRAMERATE} \

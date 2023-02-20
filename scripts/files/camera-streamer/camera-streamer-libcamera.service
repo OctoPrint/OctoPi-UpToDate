@@ -1,12 +1,14 @@
 [Unit]
 Description=camera-streamer libcamera
 After=network.target
+ConditionPathExists=/etc/octopi_streamer/mjpeg
 StartLimitIntervalSec=120
 StartLimitBurst=10
 
 [Service]
 EnvironmentFile=/boot/camera-streamer/libcamera.conf
 ExecCondition=/bin/sh -c "/usr/bin/libcamera-hello --list-cameras | grep -o '/base/soc/[^)]*'"
+ExecCondition=/bin/sh -c "! ss -ltn src :$PORT | grep -q LISTEN"
 ExecStart=/bin/sh -c "exec /usr/local/bin/camera-streamer \
   -http-port=${PORT} \
   -camera-type=libcamera \

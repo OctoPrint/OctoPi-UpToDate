@@ -1,6 +1,7 @@
 [Unit]
-Description=camera-streamer arm usb
+Description=camera-streamer
 After=network.target
+ConditionPathExists=/etc/octopi_streamer/mjpeg
 
 [Service]
 Type=oneshot

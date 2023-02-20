@@ -17,7 +17,7 @@ if [ -z "$NAME" ]; then
 fi
 
 # make sure the name is unique
-if [ -e "/boot/camera-streamer/$NAME.conf" ]; then
+if [ -e "/boot/camera-streamer/usb-$NAME.conf" ]; then
   echo "Camera $NAME already exists"
   exit 1
 fi
@@ -63,7 +63,7 @@ if [ ! -e "$DEVICE" ]; then
   exit 1
 fi
 
-cat > /boot/camera-streamer/$NAME.conf <<EOF
+cat > /boot/camera-streamer/usb-$NAME.conf <<EOF
 ### Options for USB based cameras
 
 # The port on which the webcam server for the camera should listen on.
@@ -92,4 +92,4 @@ echo "Camera $NAME added"
 echo
 echo "Port:               $PORT"
 echo "Device:             $DEVICE"
-echo "Configuration file: /boot/camera-streamer/$NAME.conf"
+echo "Configuration file: /boot/camera-streamer/usb-$NAME.conf"

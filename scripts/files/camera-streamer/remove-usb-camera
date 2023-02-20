@@ -12,14 +12,13 @@ if [ -z "$NAME" ]; then
   exit 1
 fi
 
-if [ ! -e "/boot/camera-streamer/$NAME.conf" ]; then
+if [ ! -e "/boot/camera-streamer/usb-$NAME.conf" ]; then
   echo "Camera $NAME does not exist"
   exit 1
 fi
 
 /root/bin/camera-streamer-control stop $NAME
 
-rm /boot/camera-streamer/$NAME.conf
+rm /boot/camera-streamer/usb-$NAME.conf
 rm /run/systemd/system/camera-streamer-usb-$NAME.path || true
-rm -r /run/systemd/system/camera-streamer-usb@$NAME.service.d || true
 systemctl daemon-reload
