@@ -44,11 +44,11 @@ body:
     attributes:
       label: Please confirm you have understood that you can ONLY report issues with the particular OctoPi-UpToDate build scripts here, not general OctoPrint or OctoPi issues.
       options:
-        - label: I confirm that my issue is not about OctoPrint.
+        - label: I confirm that my issue is **NOT** about OctoPrint.
           required: true
-        - label: I confirm that my issue is not about OctoPi.
+        - label: I confirm that my issue is **NOT** about OctoPi.
           required: true
-        - label: I confirm that my issue is only about OctoPi-UpToDate.
+        - label: I confirm that my issue is **ONLY** about OctoPi-UpToDate.
           required: true
   - type: textarea
     attributes:
