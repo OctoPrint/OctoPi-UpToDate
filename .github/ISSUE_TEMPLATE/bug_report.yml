@@ -1,0 +1,55 @@
+name: 🐛 Report a bug
+description: Help improve OctoPi-UpToDate by reporting observed bugs. Got a question or need support? See "Have questions or need support?" instead!
+body:
+  - type: markdown
+    attributes:
+      value: >
+
+        ### ✋ **This is bug tracker, not a support forum**
+
+
+        If something isn't working right, you have questions or need help, [**get in touch on the forums**](https://community.octoprint.org/c/support/).
+
+
+        Only proceed here if you are 100% sure the issue you are seeing is actually a bug in OctoPi-UpToDate's build scripts. If in doubt, check
+        in on the forums first, we can always file a bug from a support request later.
+  - type: dropdown
+    attributes:
+      label: What OctoPi-UpToDate modification is involved?
+      options:
+        - 01-update-octoprint
+        - 02-update-boot
+        - 03-update-libcamera-apps
+        - 80-install-user-fix
+        - 81-fix-octopi-txt
+        - 99-write-build
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: The problem
+      description: >-
+        Describe the issue you are experiencing here. Tell us what you were trying to do
+        step by step, and what happened that you did not expect.
+
+        Provide a clear and concise description of what the problem is and include as many
+        details as possible.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: Please confirm you have understood that you can ONLY report issues with the particular OctoPi-UpToDate build scripts here, not general OctoPrint or OctoPi issues.
+      options:
+        - label: I confirm that my issue is **NOT** about OctoPrint.
+          required: true
+        - label: I confirm that my issue is **NOT** about OctoPi.
+          required: true
+        - label: I confirm that my issue is **ONLY** about OctoPi-UpToDate.
+          required: true
+  - type: textarea
+    attributes:
+      label: Additional information & file uploads

@@ -95,7 +95,7 @@ jobs:
 
           let octopiUrl = null;
           for (const asset of release.releaseAssets.nodes) {
-            if (asset.name.startsWith("octopi-") && asset.name.endsWith(".zip")) {
+            if (asset.name.startsWith("octopi-") && asset.name.includes("-armhf-") && asset.name.endsWith(".zip")) {
               octopiUrl = asset.downloadUrl;
               break;
             }
@@ -161,7 +161,8 @@ jobs:
           * OctoPi ${{ env.OCTOPI_VERSION }}
           * OctoPrint ${{ env.OCTOPRINT_VERSION }}
           * Latest kernel & bootloader
-          * Service to complete username changes on first-boot as needed
+          * Latest libcamera-apps
+          * Slight documentation changes in included config files
           
         Created with [CustoPiZer](https://github.com/OctoPrint/CustoPiZer)
 
