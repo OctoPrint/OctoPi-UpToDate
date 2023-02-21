@@ -11,6 +11,7 @@ A bunch of simple update scripts are run via [CustoPiZer](https://github.com/Oct
 
   * `01-update-octoprint`: Updates OctoPrint to the latest version
   * `02-update-boot`: Updates bootloader and kernel to the latest version
+  * `03-update-libcamera-apps`: Updates the the libcamera apps to the latest version
   * `80-install-user-fix`: Installs a compatibility layer to support renaming the `pi` user, if needed.
   * `81-fix-octopi-txt`: Replaces `/boot/octopi.txt` with one with updated documentation regarding camera options.
   * `99-write-build`: Writes the build tag to `/etc/octopiuptodate-build`
