@@ -161,7 +161,8 @@ jobs:
           * OctoPi ${{ env.OCTOPI_VERSION }}
           * OctoPrint ${{ env.OCTOPRINT_VERSION }}
           * Latest kernel & bootloader
-          * Service to complete username changes on first-boot as needed
+          * Latest libcamera-apps
+          * Slight documentation changes in included config files
           
         Created with [CustoPiZer](https://github.com/OctoPrint/CustoPiZer)
 
