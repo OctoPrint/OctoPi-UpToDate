@@ -17,12 +17,12 @@ body:
     attributes:
       label: What OctoPi-UpToDate modification is involved?
       options:
-        - OctoPrint update
-        - Bootloader & Kernel update
-        - libcamera-apps update
-        - user-fix install
-        - octopi.txt fix
-        - build number write
+        - 01-update-octoprint
+        - 02-update-boot
+        - 03-update-libcamera-apps
+        - 80-install-user-fix
+        - 81-fix-octopi-txt
+        - 99-write-build
     validations:
       required: true
   - type: textarea
