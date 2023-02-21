@@ -20,6 +20,7 @@ body:
         - 01-update-octoprint
         - 02-update-boot
         - 03-update-libcamera-apps
+        - 10-install-camera-streamer
         - 80-install-user-fix
         - 81-fix-octopi-txt
         - 99-write-build

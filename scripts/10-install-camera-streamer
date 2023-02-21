@@ -10,7 +10,8 @@ install_cleanup_trap
 apt-get install --yes libavformat-dev libavutil-dev libavcodec-dev libcamera-dev liblivemedia-dev v4l-utils pkg-config xxd build-essential cmake libssl-dev
 
 # install camera-streamer
-cp /files/camera-streamer/camera-streamer.zip /tmp/camera-streamer.zip
+[ -e /files/camera-streamer/camera-streamer.zip ] && cp /files/camera-streamer/camera-streamer.zip /tmp/camera-streamer.zip \
+  || curl -L -o /tmp/camera-streamer.zip "https://github.com/OctoPrint/camera-streamer/releases/download/20230221174840/camera-streamer.zip"
 unzip /tmp/camera-streamer.zip -d /tmp/camera-streamer
 rm /tmp/camera-streamer.zip
 

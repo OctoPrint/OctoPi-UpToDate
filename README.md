@@ -12,8 +12,9 @@ A bunch of simple update scripts are run via [CustoPiZer](https://github.com/Oct
   * `01-update-octoprint`: Updates OctoPrint to the latest version
   * `02-update-boot`: Updates bootloader and kernel to the latest version
   * `03-update-libcamera-apps`: Updates the the libcamera apps to the latest version
+  * `10-install-camera-streamer`: Installs the new [camera-streamer](https://github.com/ayufan/camera-streamer) based webcam stack, replacing mjpg-streamer and webcamd. The new stack supports libcamera based cameras like the RPi Cam v3 and newer Arducams, and is also more performant. See [the FAQ](https://faq.octoprint.org/camera-streamer-config) for more details.
   * `80-install-user-fix`: Installs a compatibility layer to support renaming the `pi` user, if needed.
-  * `99-write-build`: Writes the build tag to `/etc/octopiuptodate-build`
+  * `99-write-build`: Writes the build tag to `/etc/octopiuptodate-build`.
 
 ## How do I run this?
 
