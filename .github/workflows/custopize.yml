@@ -95,7 +95,7 @@ jobs:
 
           let octopiUrl = null;
           for (const asset of release.releaseAssets.nodes) {
-            if (asset.name.startsWith("octopi-") && asset.name.endsWith(".zip")) {
+            if (asset.name.startsWith("octopi-") && asset.name.includes("-armhf-") && asset.name.endsWith(".zip")) {
               octopiUrl = asset.downloadUrl;
               break;
             }
