@@ -136,7 +136,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        wget ${{ env.OCTOPI_URL }} -O octopi.zip
+        curl -L -o octopi.zip ${{ env.OCTOPI_URL }}
         
         unzip octopi.zip
         rm octopi.zip
