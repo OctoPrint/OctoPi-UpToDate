@@ -149,7 +149,7 @@ jobs:
         now=$(date +"%Y%m%d%H%M%S")
 
         RELEASE_BUILD="build $now"
-        [ "$GITHUB_REF_NAME" != "main" ] && RELEASE_BUILD="$RELEASE_BUILD from- branch $GITHUB_REF_NAME"
+        [ "$GITHUB_REF_NAME" != "main" ] && RELEASE_BUILD="$RELEASE_BUILD from branch $GITHUB_REF_NAME"
 
         RELEASE_NAME="OctoPi ${{ env.OCTOPI_VERSION }} with OctoPrint ${{ env.OCTOPRINT_VERSION }} ($RELEASE_BUILD)"
         echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
