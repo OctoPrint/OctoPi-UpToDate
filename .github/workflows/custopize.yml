@@ -137,7 +137,7 @@ jobs:
         mkdir build
         cd build
         curl -L -o octopi.zip ${{ env.OCTOPI_URL }}
-        
+
         unzip octopi.zip
         rm octopi.zip
 
@@ -148,22 +148,25 @@ jobs:
       run: |
         now=$(date +"%Y%m%d%H%M%S")
 
-        RELEASE_NAME="OctoPi ${{ env.OCTOPI_VERSION }} with OctoPrint ${{ env.OCTOPRINT_VERSION }} (build $now)"
+        RELEASE_BUILD="build $now"
+        [ "$GITHUB_REF_NAME" != "main" ] && RELEASE_BUILD="$RELEASE_BUILD from- branch $GITHUB_REF_NAME"
+
+        RELEASE_NAME="OctoPi ${{ env.OCTOPI_VERSION }} with OctoPrint ${{ env.OCTOPRINT_VERSION }} ($RELEASE_BUILD)"
         echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
 
         RELEASE_TAG="${{ env.OCTOPI_VERSION }}-${{ env.OCTOPRINT_VERSION }}-$now"
         echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
-        
+
         # release body
 
         cat <<EOF > ./build/release.md
-  
+
           * OctoPi ${{ env.OCTOPI_VERSION }}
           * OctoPrint ${{ env.OCTOPRINT_VERSION }}
           * Latest kernel & bootloader
           * Latest libcamera-apps
-          * Slight documentation changes in included config files
-          
+          * New camera-streamer based webcam stack
+
         Created with [CustoPiZer](https://github.com/OctoPrint/CustoPiZer)
 
         <!-- mark:untested -->
@@ -175,11 +178,11 @@ jobs:
         workspace: "${{ github.workspace }}/build"
         scripts:  "${{ github.workspace }}/scripts"
         environment: '{ "OCTOPRINT_VERSION": "${{ env.OCTOPRINT_VERSION }}", "RELEASE_TAG": "${{ env.RELEASE_TAG }}" }'
-    
+
     - name: "✏ Rename image"
       run: |
         RELEASE_TAG="${{ env.RELEASE_TAG }}"
-        
+
         IMAGE="octopi-$RELEASE_TAG.img"
         echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
