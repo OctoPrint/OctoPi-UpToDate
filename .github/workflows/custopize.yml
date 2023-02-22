@@ -172,6 +172,11 @@ jobs:
         <!-- mark:untested -->
         EOF
 
+        [ "$GITHUB_REF_NAME" != "main" ] && cat <<EOF >> ./build/release.md
+
+        <!-- mark:ignored -->
+        EOF
+
     - name: "🏗 Run CustoPiZer"
       uses: OctoPrint/CustoPiZer@main
       with:
@@ -249,6 +254,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, test]
     environment: live
+    if: github.ref_name == "main"
     steps:
 
       - uses: actions/github-script@v6
