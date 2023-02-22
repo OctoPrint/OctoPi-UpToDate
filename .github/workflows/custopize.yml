@@ -136,7 +136,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        wget ${{ env.OCTOPI_URL }} -O octopi.zip
+        curl -L -o octopi.zip ${{ env.OCTOPI_URL }}
         
         unzip octopi.zip
         rm octopi.zip
@@ -216,7 +216,7 @@ jobs:
         name: "${{ env.RELEASE_NAME }}"
         tag_name: "${{ env.RELEASE_TAG }}"
         body_path: "build/release.md"
-        prerelease: ${{ contains(env.OCTOPRINT_VERSION, 'rc') }}
+        prerelease: ${{ github.ref != 'refs/heads/main' || contains(env.OCTOPRINT_VERSION, 'rc') || contains(env.OCTOPI_VERSION, 'rc') }}
         fail_on_unmatched_files: true
         files: |
           build/${{ env.IMAGE_ZIP }}
