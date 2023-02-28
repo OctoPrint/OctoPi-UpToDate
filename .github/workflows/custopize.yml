@@ -254,7 +254,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, test]
     environment: live
-    if: github.ref_name == "main"
+    if: github.ref_name == 'main'
     steps:
 
       - uses: actions/github-script@v6
