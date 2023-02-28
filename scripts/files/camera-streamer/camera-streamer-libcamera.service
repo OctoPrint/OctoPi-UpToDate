@@ -15,6 +15,8 @@ ExecStart=/bin/sh -c "exec /usr/local/bin/camera-streamer \
   -camera-path=$(/usr/bin/libcamera-hello --list-cameras | grep -o '/base/soc/[^)]*' | head -n1) \
   -camera-format=YUYV \
   -camera-width=${WIDTH} -camera-height=${HEIGHT} \
+  -camera-video.height=${VIDEO_HEIGHT} \
+  -camera-snapshot.height=${SNAPSHOT_HEIGHT} \
   -camera-fps=${FRAMERATE} \
   -camera-nbufs=2 \
   ${OPTIONS}"
