@@ -11,7 +11,7 @@ apt-get install --yes libavformat-dev libavutil-dev libavcodec-dev libcamera-dev
 
 # install camera-streamer
 [ -e /files/camera-streamer/camera-streamer.zip ] && cp /files/camera-streamer/camera-streamer.zip /tmp/camera-streamer.zip \
-  || curl -L -o /tmp/camera-streamer.zip "https://github.com/OctoPrint/camera-streamer/releases/download/20230221174840/camera-streamer.zip"
+  || curl -L -o /tmp/camera-streamer.zip "https://github.com/OctoPrint/camera-streamer/releases/download/20230228143846/camera-streamer.zip"
 unzip /tmp/camera-streamer.zip -d /tmp/camera-streamer
 rm /tmp/camera-streamer.zip
 
