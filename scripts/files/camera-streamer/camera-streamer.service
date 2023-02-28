@@ -9,6 +9,7 @@ ExecStart=/root/bin/camera-streamer-control start
 ExecStop=/root/bin/camera-streamer-control stop
 ExecReload=/root/bin/camera-streamer-control restart
 RemainAfterExit=yes
+KillMode=mixed
 
 [Install]
 WantedBy=multi-user.target
