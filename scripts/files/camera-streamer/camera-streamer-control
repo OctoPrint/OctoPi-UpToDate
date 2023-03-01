@@ -8,7 +8,37 @@ fi
 action=$1
 single=$2
 
-[ -n "$single" ] || systemctl $action "camera-streamer-libcamera.service"
+run-action() {
+  unit=$1
+  echo "Running $action for $unit..."
+  systemctl $action --no-block "$unit"
+  echo "... done."
+}
+
+add-path-unit() {
+  dev=$1
+  name=$2
+
+  # Add runtime path unit file that starts the service when the device is plugged in
+  path_dir="/run/systemd/system"
+  if ! grep -s -q -F "PathExistsGlob=$dev" "$path_dir/camera-streamer-usb-$name.path"; then
+    echo "Adding path unit for autolaunch of camera-streamer-usb@$name"
+    cat > "$path_dir/camera-streamer-usb-$name.path" <<EOF
+[Unit]
+Description=camera-streamer $name autolaunch
+
+[Path]
+PathExistsGlob=$dev
+Unit=camera-streamer-usb@$name.service
+EOF
+    systemctl daemon-reload || true
+  fi
+}
+
+# start/stop/restart the libcamera service
+if [ -z "$single" ] || [[ "$single" == "libcamera" ]]; then
+  run-action "camera-streamer-libcamera.service"
+fi
 
 # iterate over all the camera confs in /boot/camera-streamer
 for conf in /boot/camera-streamer/usb-*.conf; do
@@ -25,24 +55,12 @@ for conf in /boot/camera-streamer/usb-*.conf; do
   [ -n "$DEVICE" ] || continue
 
   if [[ "$action" == "start" ]] || [[ "$action" == "restart" ]]; then
-    # Add runtime path unit file that starts the service when the device is plugged in
-    path_dir="/run/systemd/system"
-    if ! grep -q "PathExistsGlob=$DEVICE" "$path_dir/camera-streamer-usb-$name.path"; then
-      echo "Adding path unit for autolaunch of camera-streamer-usb@$name"
-      cat > "$path_dir/camera-streamer-usb-$name.path" <<EOF
-[Unit]
-Description=camera-streamer $name autolaunch
-
-[Path]
-PathExistsGlob=$DEVICE
-Unit=camera-streamer-usb@$name.service
-EOF
-      systemctl daemon-reload || true
-    fi
+    add-path-unit "$DEVICE" "$name"
   fi
 
-  # do the action
-  echo "Running $action for camera-streamer-usb-$name.path..."
-  systemctl $action "camera-streamer-usb-$name.path"
-  echo "... done."
+  # start/stop/restart the USB camera services
+  run-action "camera-streamer-usb-$name.path"
+  if systemctl is-active --quiet "camera-streamer-usb@$name.service" && ([[ "$action" == "stop" ]] || [[ "$action" == "restart" ]]); then
+    run-action "camera-streamer-usb@$name.service"
+  fi
 done
