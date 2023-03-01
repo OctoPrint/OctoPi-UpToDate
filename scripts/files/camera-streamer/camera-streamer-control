@@ -32,7 +32,6 @@ for conf in /boot/camera-streamer/usb-*.conf; do
       cat > "$path_dir/camera-streamer-usb-$name.path" <<EOF
 [Unit]
 Description=camera-streamer $name autolaunch
-After=network.target
 
 [Path]
 PathExistsGlob=$DEVICE
