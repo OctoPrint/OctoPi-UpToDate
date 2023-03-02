@@ -33,9 +33,8 @@ cp /files/camera-streamer/usb-default.conf /boot/camera-streamer/usb-default.con
 cp /files/camera-streamer/camera-streamer-control /root/bin/camera-streamer-control
 chmod +x /root/bin/camera-streamer-control
 
-cp /files/camera-streamer/camera-streamer.service /etc/systemd/system/camera-streamer.service
-cp /files/camera-streamer/camera-streamer-libcamera.service /etc/systemd/system/camera-streamer-libcamera.service
-cp /files/camera-streamer/camera-streamer-usb@.service /etc/systemd/system/camera-streamer-usb@.service
+cp /files/camera-streamer/camera-streamer*.service /etc/systemd/system/
+chmod -x /etc/systemd/system/camera-streamer*.service
 
 # Only enable the camera-streamer service, it will start the others as configured
 systemctl enable camera-streamer.service
