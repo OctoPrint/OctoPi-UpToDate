@@ -1,0 +1,7 @@
+#!/bin/bash
+
+SERVER="https://paste.octoprint.org"
+
+FILE=$1
+output=$(/usr/bin/curl -sSL -X POST --data-binary @${FILE:--} $SERVER/api/pastes/simple)
+echo "$SERVER/$output"
