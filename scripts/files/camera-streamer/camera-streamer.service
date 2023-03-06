@@ -5,9 +5,9 @@ ConditionPathExists=/etc/octopi_streamer/mjpeg
 
 [Service]
 Type=oneshot
-ExecStart=/root/bin/camera-streamer-control start
-ExecStop=/root/bin/camera-streamer-control stop
-ExecReload=/root/bin/camera-streamer-control restart
+ExecStart=/usr/local/bin/camera-streamer-control start
+ExecStop=/usr/local/bin/camera-streamer-control stop
+ExecReload=/usr/local/bin/camera-streamer-control restart
 RemainAfterExit=yes
 KillMode=mixed
 TimeoutStopSec=10

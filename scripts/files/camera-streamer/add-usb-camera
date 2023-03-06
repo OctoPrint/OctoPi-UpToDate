@@ -86,7 +86,7 @@ FRAMERATE=15
 OPTIONS=
 EOF
 
-/root/bin/camera-streamer-control restart $NAME
+/usr/local/bin/camera-streamer-control restart $NAME
 
 echo "Camera $NAME added"
 echo

@@ -17,7 +17,7 @@ if [ ! -e "/boot/camera-streamer/usb-$NAME.conf" ]; then
   exit 1
 fi
 
-/root/bin/camera-streamer-control stop $NAME
+/usr/local/bin/camera-streamer-control stop $NAME
 
 rm /boot/camera-streamer/usb-$NAME.conf
 rm /run/systemd/system/camera-streamer-usb-$NAME.path || true

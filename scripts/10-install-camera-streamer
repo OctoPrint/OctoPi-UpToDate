@@ -30,8 +30,8 @@ cp /files/camera-streamer/libcamera.conf /boot/camera-streamer/libcamera.conf
 cp /files/camera-streamer/usb-default.conf /boot/camera-streamer/usb-default.conf
 
 # install services
-cp /files/camera-streamer/camera-streamer-control /root/bin/camera-streamer-control
-chmod +x /root/bin/camera-streamer-control
+cp /files/camera-streamer/camera-streamer-control /usr/local/bin/camera-streamer-control
+chmod +x /usr/local/bin/camera-streamer-control
 
 cp /files/camera-streamer/camera-streamer*.service /etc/systemd/system/
 chmod -x /etc/systemd/system/camera-streamer*.service
@@ -40,12 +40,12 @@ chmod -x /etc/systemd/system/camera-streamer*.service
 systemctl enable camera-streamer.service
 
 # install helper scripts
-cp /files/camera-streamer/add-usb-camera /root/bin/add-usb-camera
-cp /files/camera-streamer/remove-usb-camera /root/bin/remove-usb-camera
-cp /files/camera-streamer/list-usb-cameras /root/bin/list-usb-cameras
-chmod +x /root/bin/add-usb-camera
-chmod +x /root/bin/remove-usb-camera
-chmod +x /root/bin/list-usb-cameras
+cp /files/camera-streamer/add-usb-camera /usr/local/bin/add-usb-camera
+cp /files/camera-streamer/remove-usb-camera /usr/local/bin/remove-usb-camera
+cp /files/camera-streamer/list-usb-cameras /usr/local/bin/list-usb-cameras
+chmod +x /usr/local/bin/add-usb-camera
+chmod +x /usr/local/bin/remove-usb-camera
+chmod +x /usr/local/bin/list-usb-cameras
 
 # clean up the old stuff
 cat > /boot/octopi.txt <<EOF
