@@ -6,12 +6,13 @@ export LC_ALL=C
 source /common.sh
 install_cleanup_trap
 
+[ -n "$CAMERA_STREAMER_ARCHIVE" ] || CAMERA_STREAMER_ARCHIVE="https://github.com/OctoPrint/camera-streamer-archive/releases/download/master-20230309133708/camera-streamer.zip"
+
 # install dependencies
 apt-get install --yes libavformat-dev libavutil-dev libavcodec-dev libcamera-dev liblivemedia-dev v4l-utils pkg-config xxd build-essential cmake libssl-dev
 
 # install camera-streamer
-[ -e /files/camera-streamer/camera-streamer.zip ] && cp /files/camera-streamer/camera-streamer.zip /tmp/camera-streamer.zip \
-  || curl -L -o /tmp/camera-streamer.zip "https://github.com/OctoPrint/camera-streamer-archive/releases/download/develop-20230228153824/camera-streamer.zip"
+curl -L -o /tmp/camera-streamer.zip "$CAMERA_STREAMER_ARCHIVE"
 unzip /tmp/camera-streamer.zip -d /tmp/camera-streamer
 rm /tmp/camera-streamer.zip
 
