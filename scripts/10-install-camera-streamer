@@ -6,21 +6,8 @@ export LC_ALL=C
 source /common.sh
 install_cleanup_trap
 
-[ -n "$CAMERA_STREAMER_ARCHIVE" ] || CAMERA_STREAMER_ARCHIVE="https://github.com/OctoPrint/camera-streamer-archive/releases/download/master-20230309133708/camera-streamer.zip"
-
-# install dependencies
-apt-get install --yes libavformat-dev libavutil-dev libavcodec-dev libcamera-dev liblivemedia-dev v4l-utils pkg-config xxd build-essential cmake libssl-dev
-
-# install camera-streamer
-curl -L -o /tmp/camera-streamer.zip "$CAMERA_STREAMER_ARCHIVE"
-unzip /tmp/camera-streamer.zip -d /tmp/camera-streamer
-rm /tmp/camera-streamer.zip
-
-pushd /tmp/camera-streamer/camera-streamer
-  make -j$(nproc)
-  make install
-popd
-rm -rf /tmp/camera-streamer
+# install our precompiled camera-streamer from apt.octoprint.org
+apt-get install --yes camera-streamer libcamera-apps-lite
 
 # enable camera auto-detection
 sed -i 's/^camera_auto_detect=0/camera_auto_detect=1/' /boot/config.txt

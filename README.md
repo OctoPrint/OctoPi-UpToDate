@@ -9,9 +9,9 @@ and provides the resulting image ready to flash. Checkout the [releases](https:/
 
 A bunch of simple update scripts are run via [CustoPiZer](https://github.com/OctoPrint/CustoPiZer):
 
-  * `01-update-octoprint`: Updates OctoPrint to the latest version
-  * `02-update-boot`: Updates bootloader and kernel to the latest version
-  * `03-update-libcamera-apps`: Updates the the libcamera apps to the latest version
+  * `01-add-octoprint-apt-repo`: Adds `apt.octoprint.org` to the apt sources
+  * `02-update-octoprint`: Updates OctoPrint to the latest version
+  * `03-update-boot`: Updates bootloader and kernel to the latest version
   * `10-install-camera-streamer`: Installs the new [camera-streamer](https://github.com/ayufan/camera-streamer) based webcam stack, replacing mjpg-streamer and webcamd. The new stack supports libcamera based cameras like the RPi Cam v3 and newer Arducams, and is also more performant. See [the FAQ](https://faq.octoprint.org/camera-streamer-config) for more details.
   * `11-install-pb`: Installs a small script under `/usr/local/bin/pb` that allows to easily share stdin or a text file to paste.octoprint.org.
   * `80-install-user-fix`: Installs a compatibility layer to support renaming the `pi` user, if needed.

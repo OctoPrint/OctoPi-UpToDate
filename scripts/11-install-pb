@@ -6,7 +6,7 @@ export LC_ALL=C
 source /common.sh
 install_cleanup_trap
 
-# if input_raspi.so is there, we don't need to do anything
+# if pb is there, we don't need to do anything
 [ -f /usr/local/bin/pb ] && exit 0
 
 cp /files/pb /usr/local/bin/pb
