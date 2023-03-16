@@ -17,7 +17,7 @@ ExecStart=/bin/sh -c "exec /usr/bin/camera-streamer \
   --camera-type=v4l2 \
   --camera-path=$(ls -b $DEVICE | head -n1) \
   --camera-format=${FORMAT} \
-  --camera-width=${WIDTH} -camera-height=${HEIGHT} \
+  --camera-width=${WIDTH} --camera-height=${HEIGHT} \
   --camera-fps=${FRAMERATE} \
   --camera-nbufs=${NBUFS:-2} \
   ${OPTIONS}"
