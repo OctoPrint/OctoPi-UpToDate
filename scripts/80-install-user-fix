@@ -7,7 +7,7 @@ source /common.sh
 install_cleanup_trap
 
 # we need to install virtualenv-tools3, so let's get pip and that
-apt install -y python3-pip
+apt-get install -y python3-pip
 sudo -u pi pip3 install --user virtualenv-tools3
 
 cp /files/user-fix /root/bin/user-fix
