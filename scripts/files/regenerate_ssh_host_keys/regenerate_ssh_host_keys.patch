@@ -1,0 +1,11 @@
+--- a/usr/lib/raspberrypi-sys-mods/regenerate_ssh_host_keys	2022-09-01 16:22:09.000000000 +0100
++++ b/usr/lib/raspberrypi-sys-mods/regenerate_ssh_host_keys	2023-03-28 12:26:26.822217883 +0100
+@@ -1,8 +1,5 @@
+ #!/bin/sh -e
+ 
+-if [ -c /dev/hwrng ]; then
+-  dd if=/dev/hwrng of=/dev/urandom count=1 bs=4096 status=none
+-fi
+ rm -f /etc/ssh/ssh_host_*_key*
+ ssh-keygen -A > /dev/null
+ systemctl -q disable regenerate_ssh_host_keys

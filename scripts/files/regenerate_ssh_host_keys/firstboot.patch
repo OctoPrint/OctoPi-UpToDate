@@ -1,0 +1,11 @@
+--- a/usr/lib/raspberrypi-sys-mods/firstboot	2022-09-15 13:46:12.000000000 +0100
++++ b/usr/lib/raspberrypi-sys-mods/firstboot	2023-03-28 12:31:05.529858256 +0100
+@@ -63,7 +63,7 @@
+ fix_partuuid() {
+   mount -o remount,rw "$ROOT_PART_DEV"
+   mount -o remount,rw "$BOOT_PART_DEV"
+-  DISKID="$(tr -dc 'a-f0-9' < /dev/hwrng | dd bs=1 count=8 2>/dev/null)"
++  DISKID="$(tr -dc 'a-f0-9' < /dev/urandom | dd bs=1 count=8 2>/dev/null)"
+   fdisk "$ROOT_DEV" > /dev/null <<EOF
+ x
+ i

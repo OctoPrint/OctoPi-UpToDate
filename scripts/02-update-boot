@@ -7,3 +7,19 @@ source /common.sh
 install_cleanup_trap
 
 apt-get install --yes --reinstall raspberrypi-bootloader raspberrypi-kernel
+
+kernel_version=$(dpkg -s raspberrypi-kernel | grep -i version | awk '{print $2}')
+if [ "$kernel_version" = "1:1.20230317-1" ]; then
+    # This kernel version needs a workaround because ssh key generation is slow AF
+    #
+    # Patches from https://github.com/RPi-Distro/pi-gen/issues/682#issuecomment-1484119300
+    #
+    # Note that this is a temporary workaround, and will be removed in the future. Using
+    # /dev/urandom instead of /dev/hwrng is less secure for key generation, however for now
+    # it is the only way to get a working system thanks to a kernel bug in hwrng on anything
+    # other than the Pi 4, see https://github.com/raspberrypi/linux/issues/5390
+    pushd /
+        patch -p1 -u -b < /files/regenerate_ssh_host_keys/regenerate_ssh_host_keys.patch
+        patch -p1 -u -b < /files/regenerate_ssh_host_keys/firstboot.patch
+    popd
+fi
