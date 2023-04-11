@@ -36,6 +36,9 @@ sed -i 's/^camera_auto_detect=0/camera_auto_detect=1/' /boot/config.txt
 # Only enable the camera-streamer service, it will start the others as configured
 systemctl enable camera-streamer.service
 
+# Swap the Haproxy 503 error page to reference the new webcam stack
+cp /files/503-no-webcam.http /etc/haproxy/errors/503-no-webcam.http
+
 ### --- clean up the old stuff ------------------------------------------------
 
 cat > /boot/octopi.txt <<EOF
