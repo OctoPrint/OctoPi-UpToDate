@@ -9,6 +9,7 @@ and provides the resulting image ready to flash. Checkout the [releases](https:/
 
 A bunch of simple update scripts are run via [CustoPiZer](https://github.com/OctoPrint/CustoPiZer):
 
+  * `00-enforce-32bit-kernel`: Ensures only 32bit kernels are installed (since RPi kernel 6.1 64bit will be installed even on 32bit)
   * `01-update-octoprint`: Updates OctoPrint to the latest version
   * `02-update-boot`: Updates bootloader and kernel to the latest version
   * `03-update-libcamera-apps`: Updates the the libcamera apps to the latest version
