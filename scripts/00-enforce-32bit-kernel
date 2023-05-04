@@ -1,0 +1,17 @@
+set -x
+set -e
+
+export LC_ALL=C
+
+source /common.sh
+install_cleanup_trap
+
+## Taken from https://github.com/piwheels/piwheels/commit/63f2ac1f24ece782627dc47e9519f98222b27490
+
+# Enforce 32-bit kernel as the 64-bit kernel is used by default (also on RPi OS 32-bit) since RPi Linux 6.1
+if [ -f /boot/config.txt ]; then
+    sed -i '/^[[:blank:]]*arm_64bit=/d' /boot/config.txt # remove setting first
+    sed -i '1iarm_64bit=0' /boot/config.txt # readd setting to top of file to assure it is effective on all RPi models
+else
+    echo 'arm_64bit=0' > /boot/config.txt
+fi
