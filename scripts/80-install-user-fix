@@ -6,6 +6,9 @@ export LC_ALL=C
 source /common.sh
 install_cleanup_trap
 
+# if we already have the user-fix installed, we don't need to do anything
+[ -f '/root/bin/user-fix' ] && exit 0
+
 # we need to install virtualenv-tools3, so let's get pip and that
 apt-get install -y python3-pip
 sudo -u pi pip3 install --user virtualenv-tools3
