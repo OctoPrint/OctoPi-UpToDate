@@ -8,11 +8,12 @@ install_cleanup_trap
 
 ### --- install the new stuff -----------------------------------------------
 
-# install our precompiled camera-streamer from apt.octoprint.org
-apt-get install --yes camera-streamer libcamera-apps-lite v4l-utils
+# install camera-streamer and dependencies
+apt-get install --yes camera-streamer-raspi
 
 # install units, configs & helpers
 pushd /tmp
+    apt-get install --yes v4l-utils
     git clone https://github.com/OctoPrint/camera-streamer-stack.git
     pushd camera-streamer-stack
         make install
