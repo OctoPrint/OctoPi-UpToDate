@@ -6,8 +6,9 @@ export LC_ALL=C
 source /common.sh
 install_cleanup_trap
 
-# if we already have the user-fix installed, we don't need to do anything
-[ -f '/root/bin/user-fix' ] && exit 0
+# this is intentionally commented out because our user-fix script has 
+# to be changed compared the one already shipping with OctoPi
+#[ -f '/root/bin/user-fix' ] && exit 0
 
 # we need to install virtualenv-tools3, so let's get pip and that
 apt-get install -y python3-pip
