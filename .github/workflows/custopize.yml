@@ -27,7 +27,7 @@ jobs:
     steps:
 
     - name: "⬇ Checkout"
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: "🔎 Determine OctoPi version"
       uses: actions/github-script@v6
@@ -217,6 +217,7 @@ jobs:
         image_size: ${{ steps.package-image.outputs.image_size }}
         zip_sha256: ${{ steps.package-image.outputs.zip_sha256 }}
         zip_size: ${{ steps.package-image.outputs.zip_size }}
+        devices: "pi4-32bit,pi3-32bit,pi2-32bit,pi1-32bit"
 
     - name: "🔖 Create release & attach assets"
       uses: softprops/action-gh-release@v1
