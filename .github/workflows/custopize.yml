@@ -240,7 +240,7 @@ jobs:
           repo: OctoPrint/devtools
           ref: main
           inputs: '{"image": "${{ needs.build.outputs.image-url }}", "target": "pic"}'
-          repost-logs: true
+          repost-logs: false
 
   deploy:
     name: "Deploy"
