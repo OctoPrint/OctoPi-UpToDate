@@ -160,6 +160,7 @@ jobs:
   
           * OctoPi ${{ env.OCTOPI_VERSION }}
           * OctoPrint ${{ env.OCTOPRINT_VERSION }}
+          * Latest versions of the bundled OctoPrint plugins
           * Latest kernel & bootloader
           * Latest libcamera-apps
           * Slight documentation changes in included config files
