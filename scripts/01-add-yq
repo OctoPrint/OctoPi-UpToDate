@@ -1,0 +1,13 @@
+set -x
+set -e
+
+export LC_ALL=C
+
+source /common.sh
+install_cleanup_trap
+
+# if pb is there, we don't need to do anything
+[ -f /usr/local/bin/yq ] && exit 0
+
+curl -L -o /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.43.1/yq_linux_arm
+chmod +x /usr/local/bin/yq
