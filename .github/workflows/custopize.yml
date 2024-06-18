@@ -24,6 +24,7 @@ jobs:
       tag: ${{ env.RELEASE_TAG }}
       image-zip: ${{ env.IMAGE_ZIP }}
       image-url: ${{ env.IMAGE_URL }}
+      e2e-branch: ${{ env.E2E_BRANCH }}
     steps:
 
     - name: "⬇ Checkout"
@@ -131,6 +132,17 @@ jobs:
 
         echo "OCTOPRINT_VERSION=$OCTOPRINT_VERSION" >> $GITHUB_ENV
 
+    - name: "🔎 Determine e2e branch"
+      run: |
+        E2E_BRANCH="master"
+        if [[ "${{ env.OCTOPRINT_VERSION }}" == *"-rc"* ]]; then
+          E2E_BRANCH="maintenance"
+        fi
+
+        echo "E2E branch: $E2E_BRANCH"
+
+        echo "E2E_BRANCH=$E2E_BRANCH" >> $GITHUB_ENV
+  
     - name: "⬇ Download OctoPi"
       id: octopi_download
       run: |
@@ -240,7 +252,7 @@ jobs:
           workflow: Test against testrig
           repo: OctoPrint/devtools
           ref: main
-          inputs: '{"image": "${{ needs.build.outputs.image-url }}", "target": "pic"}'
+          inputs: '{"image": "${{ needs.build.outputs.image-url }}", "target": "pic", "e2e-branch": "${{ needs.build.outputs.e2e-branch }}"}'
           repost-logs: false
 
   deploy:
