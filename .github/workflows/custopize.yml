@@ -233,7 +233,7 @@ jobs:
         devices: "pi4-32bit,pi3-32bit,pi2-32bit,pi1-32bit"
 
     - name: "🔖 Create release & attach assets"
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         name: "${{ env.RELEASE_NAME }}"
         tag_name: "${{ env.RELEASE_TAG }}"
@@ -254,14 +254,22 @@ jobs:
     needs: build
     steps:
       - name: 🏃‍♀️ Run test against testrig
-        uses: jonas-schievink/workflow-proxy@v1
+        uses: the-actions-org/workflow-dispatch@v4
+        env:
+          RUN_NAME: "Testing OctoPi-UpToDate ${{ needs.build.outputs.tag }}"
         with:
           token: ${{ secrets.DISPATCH_TOKEN }}
-          workflow: Test against testrig
           repo: OctoPrint/devtools
+          workflow: test_against_testrig.yml
           ref: main
-          inputs: '{"image": "${{ needs.build.outputs.image-url }}", "target": "pic", "e2e-branch": "${{ needs.build.outputs.e2e-branch }}"}'
-          repost-logs: false
+          run-name: ${{ env.RUN_NAME }}
+          inputs: >-
+            {
+              "image": "${{ needs.build.outputs.image-url }}",
+              "target": "pic",
+              "e2e-branch": "${{ needs.build.outputs.e2e-branch }}",
+              "run-name": "${{ env.RUN_NAME }}"
+            }
 
   deploy:
     name: "Deploy"
