@@ -13,6 +13,10 @@ on:
         description: "OctoPrint version (leave empty to use latest stable release)"
         required: false
         default: ''
+      custopizer_tag:
+        description: "CustoPiZer docker tag to use"
+        required: false
+        default: 'latest'
 
 jobs:
   build:
@@ -183,11 +187,14 @@ jobs:
         EOF
 
     - name: "🏗 Run CustoPiZer"
-      uses: OctoPrint/CustoPiZer@main
-      with:
-        workspace: "${{ github.workspace }}/build"
-        scripts:  "${{ github.workspace }}/scripts"
-        environment: '{ "OCTOPRINT_VERSION": "${{ env.OCTOPRINT_VERSION }}", "RELEASE_TAG": "${{ env.RELEASE_TAG }}" }'
+      run: |
+        sudo modprobe loop
+
+        command="--rm --privileged -e OCTOPRINT_VERSION=${{ env.OCTOPRINT_VERSION }} -e RELEASE_TAG=${{ env.RELEASE_TAG }} -v ${{ github.workspace }}/build:/CustoPiZer/workspace -v ${{ github.workspace }}/scripts:/CustoPiZer/workspace/scripts ghcr.io/octoprint/custopizer:${{ github.event.inputs.custopizer_tag }}"
+
+        echo "About to execute 'docker run $command'..."
+
+        docker run $command
     
     - name: "✏ Rename image"
       run: |
