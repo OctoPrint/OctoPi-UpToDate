@@ -13,10 +13,10 @@ on:
         description: "OctoPrint version (leave empty to use latest stable release)"
         required: false
         default: ''
-      custopizer_tag:
-        description: "CustoPiZer docker tag to use"
+      custopizer:
+        description: "CustoPiZer to use"
         required: false
-        default: 'latest'
+        default: 'ghcr.io/octoprint/custopizer:latest'
 
 jobs:
   build:
@@ -190,13 +190,7 @@ jobs:
       run: |
         sudo modprobe loop
 
-        custopizer_tag="${{ github.event.inputs.custopizer_tag }}"
-        if [ "$custopizer_tag" == "latest" ]; then
-          tag=":latest"
-        else
-          tag="@$custopizer_tag"
-        fi
-        command="--rm --privileged -e OCTOPRINT_VERSION=${{ env.OCTOPRINT_VERSION }} -e RELEASE_TAG=${{ env.RELEASE_TAG }} -v ${{ github.workspace }}/build:/CustoPiZer/workspace -v ${{ github.workspace }}/scripts:/CustoPiZer/workspace/scripts ghcr.io/octoprint/custopizer$tag"
+        command="--rm --privileged -e OCTOPRINT_VERSION=${{ env.OCTOPRINT_VERSION }} -e RELEASE_TAG=${{ env.RELEASE_TAG }} -v ${{ github.workspace }}/build:/CustoPiZer/workspace -v ${{ github.workspace }}/scripts:/CustoPiZer/workspace/scripts ${{ github.event.inputs.custopizer }}"
 
         echo "About to execute 'docker run $command'..."
 
