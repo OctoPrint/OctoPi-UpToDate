@@ -190,7 +190,13 @@ jobs:
       run: |
         sudo modprobe loop
 
-        command="--rm --privileged -e OCTOPRINT_VERSION=${{ env.OCTOPRINT_VERSION }} -e RELEASE_TAG=${{ env.RELEASE_TAG }} -v ${{ github.workspace }}/build:/CustoPiZer/workspace -v ${{ github.workspace }}/scripts:/CustoPiZer/workspace/scripts ghcr.io/octoprint/custopizer:${{ github.event.inputs.custopizer_tag }}"
+        custopizer_tag="${{ github.event.inputs.custopizer_tag }}"
+        if [ "$custopizer_tag" == "latest" ]; then
+          tag=":latest"
+        else
+          tag="@$custopizer_tag"
+        fi
+        command="--rm --privileged -e OCTOPRINT_VERSION=${{ env.OCTOPRINT_VERSION }} -e RELEASE_TAG=${{ env.RELEASE_TAG }} -v ${{ github.workspace }}/build:/CustoPiZer/workspace -v ${{ github.workspace }}/scripts:/CustoPiZer/workspace/scripts ghcr.io/octoprint/custopizer$tag"
 
         echo "About to execute 'docker run $command'..."
 
