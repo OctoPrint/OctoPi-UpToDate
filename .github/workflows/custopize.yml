@@ -17,7 +17,7 @@ on:
 jobs:
   build:
     name: "Build"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     outputs:
       octoprint-version: ${{ env.OCTOPRINT_VERSION }}
       octopi-version: ${{ env.OCTOPI_VERSION }}
