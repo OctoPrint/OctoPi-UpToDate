@@ -183,7 +183,7 @@ jobs:
         EOF
 
     - name: "🏗 Run CustoPiZer"
-      uses: OctoPrint/CustoPiZer@main
+      uses: OctoPrint/CustoPiZer@v1
       with:
         workspace: "${{ github.workspace }}/build"
         scripts:  "${{ github.workspace }}/scripts"
