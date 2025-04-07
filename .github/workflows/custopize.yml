@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       octopi_version:
-        description: "OctoPi version (leave empty to use latest stable release)"
+        description: "OctoPi version (leave empty to use latest stable release, may also be 'version:url')"
         required: false
         default: ''
       octoprint_version:
@@ -45,64 +45,74 @@ jobs:
             console.log(`Version from workflow dispatch: ${version}`);
           }
 
-          if (version) {
-            console.log(`Fetching release of ${version}`);
-
-            const query = `query {
-              repository(owner: "guysoft", name: "Octopi") {
-                release(tagName:"${version}") {
-                  tagName
-                  releaseAssets(first:5) {
-                    nodes {
-                      name
-                      downloadUrl
-                    }
-                  }
-                }
-              }
-            }`;
-
-            const result = await github.graphql(query);
-            console.log({result});
-
-            release = result.repository.release;
+          if (version.includes(":")) {
+            // version is in "version:url" format
+            const pos = version.indexOf(":")
+            const octopiVersion = version.slice(0, pos);
+            const octopiUrl = version.slice(pos + 1);
 
           } else {
-            console.log("Fetching latest release");
+            if (version) {
+              // version provided
+              console.log(`Fetching release of ${version}`);
 
-            const query = `query {
-              repository(owner:"guysoft", name:"OctoPi") {
-                latestRelease {
-                  tagName
-                  releaseAssets(first:5) {
-                    nodes {
-                      name
-                      downloadUrl
+              const query = `query {
+                repository(owner: "guysoft", name: "Octopi") {
+                  release(tagName:"${version}") {
+                    tagName
+                    releaseAssets(first:5) {
+                      nodes {
+                        name
+                        downloadUrl
+                      }
                     }
                   }
                 }
-              }
-            }`;
+              }`;
 
-            const result = await github.graphql(query);
-            console.log({result});
+              const result = await github.graphql(query);
+              console.log({result});
 
-            release = result.repository.latestRelease;
-          }
+              release = result.repository.release;
 
-          if (!release || !release.tagName || !release.releaseAssets || !release.releaseAssets.nodes) core.setFailed("Could not find OctoPi release");
+            } else {
+              // no version provided
+              console.log("Fetching latest release");
 
-          const octopiVersion = release.tagName;
+              const query = `query {
+                repository(owner:"guysoft", name:"OctoPi") {
+                  latestRelease {
+                    tagName
+                    releaseAssets(first:5) {
+                      nodes {
+                        name
+                        downloadUrl
+                      }
+                    }
+                  }
+                }
+              }`;
 
-          let octopiUrl = null;
-          for (const asset of release.releaseAssets.nodes) {
-            if (asset.name.startsWith("octopi-") && asset.name.includes("-armhf-") && asset.name.endsWith(".zip")) {
-              octopiUrl = asset.downloadUrl;
-              break;
+              const result = await github.graphql(query);
+              console.log({result});
+
+              release = result.repository.latestRelease;
             }
-          }
 
-          if (!octopiUrl) core.setFailed("Could not find OctoPi download URL");
+            if (!release || !release.tagName || !release.releaseAssets || !release.releaseAssets.nodes) core.setFailed("Could not find OctoPi release");
+
+            const octopiVersion = release.tagName;
+
+            let octopiUrl = null;
+            for (const asset of release.releaseAssets.nodes) {
+              if (asset.name.startsWith("octopi-") && asset.name.includes("-armhf-") && asset.name.endsWith(".zip")) {
+                octopiUrl = asset.downloadUrl;
+                break;
+              }
+            }
+
+            if (!octopiUrl) core.setFailed("Could not find OctoPi download URL");
+          }
 
           console.log(`OctoPi version: ${octopiVersion}`)
           console.log(`OctoPi download URL: ${octopiUrl}`)
