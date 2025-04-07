@@ -51,6 +51,12 @@ jobs:
             const octopiVersion = version.slice(0, pos);
             const octopiUrl = version.slice(pos + 1);
 
+            console.log(`OctoPi version: ${octopiVersion}`)
+            console.log(`OctoPi download URL: ${octopiUrl}`)
+
+            core.exportVariable("OCTOPI_VERSION", octopiVersion)
+            core.exportVariable("OCTOPI_URL", octopiUrl)
+
           } else {
             if (version) {
               // version provided
@@ -112,13 +118,13 @@ jobs:
             }
 
             if (!octopiUrl) core.setFailed("Could not find OctoPi download URL");
+
+            console.log(`OctoPi version: ${octopiVersion}`)
+            console.log(`OctoPi download URL: ${octopiUrl}`)
+
+            core.exportVariable("OCTOPI_VERSION", octopiVersion)
+            core.exportVariable("OCTOPI_URL", octopiUrl)
           }
-
-          console.log(`OctoPi version: ${octopiVersion}`)
-          console.log(`OctoPi download URL: ${octopiUrl}`)
-
-          core.exportVariable("OCTOPI_VERSION", octopiVersion)
-          core.exportVariable("OCTOPI_URL", octopiUrl)
 
     - name: "🔎 Determine OctoPrint version"
       run: |
