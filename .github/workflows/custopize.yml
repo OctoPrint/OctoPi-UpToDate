@@ -45,7 +45,7 @@ jobs:
             console.log(`Version from workflow dispatch: ${version}`);
           }
 
-          if (version.includes(":")) {
+          if (version && version.includes(":")) {
             // version is in "version:url" format
             const pos = version.indexOf(":")
             const octopiVersion = version.slice(0, pos);
