@@ -6,7 +6,10 @@ export LC_ALL=C
 source /common.sh
 install_cleanup_trap
 
-# if we already have the octopi.txt file updated, we don't need to do anything
+# if there's no welcome script at /home/pi/scripts/welcome, we don't need to do anything
+[ ! -f '/home/pi/scripts/welcome' ] && exit 0
+
+# if we already have the file updated, we don't need to do anything
 grep -q 'from octoprint._version import' /home/pi/scripts/welcome || exit 0
 
 sed -i 's#^_OCTOPRINT_VERSION=.*$#_OCTOPRINT_VERSION=$($HOME/oprint/bin/python -c "from octoprint.util.version import get_octoprint_version_string; print(get_octoprint_version_string())" || echo "unknown")#' /home/pi/scripts/welcome

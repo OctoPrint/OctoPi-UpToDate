@@ -10,6 +10,6 @@ install_cleanup_trap
 [ -f /opt/mjpg-streamer/input_raspi.so ] && exit 0
 
 # if we already have the octopi.txt file updated, we don't need to do anything
-grep -q '### Configure which camera to use' /boot/octopi.txt || exit 0
+grep -q '### Configure which camera to use' $BOOT_PATH/octopi.txt || exit 0
 
-cp /files/octopi.txt /boot/octopi.txt
+cp /files/octopi.txt $BOOT_PATH/octopi.txt
