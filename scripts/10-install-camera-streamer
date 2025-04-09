@@ -21,9 +21,9 @@ pushd /tmp
     rm -rf camera-streamer-stack
 popd
 
-# put configs on /boot on OctoPi
-mv /etc/camera-streamer.conf.d /boot/camera-streamer
-ln -s /boot/camera-streamer /etc/camera-streamer.conf.d
+# put configs on fat partition on OctoPi
+mv /etc/camera-streamer.conf.d $BOOT_PATH/camera-streamer
+ln -s $BOOT_PATH/camera-streamer /etc/camera-streamer.conf.d
 
 # only run stack if mjpeg is selected as streamer
 for unit in camera-streamer camera-streamer-usb@ camera-streamer-libcamera; do
@@ -32,7 +32,7 @@ for unit in camera-streamer camera-streamer-usb@ camera-streamer-libcamera; do
 done
 
 # enable camera auto-detection
-sed -i 's/^camera_auto_detect=0/camera_auto_detect=1/' /boot/config.txt
+sed -i 's/^camera_auto_detect=0/camera_auto_detect=1/' $BOOT_PATH/config.txt
 
 # Only enable the camera-streamer service, it will start the others as configured
 systemctl enable camera-streamer.service
@@ -42,7 +42,7 @@ cp /files/503-no-webcam.http /etc/haproxy/errors/503-no-webcam.http
 
 ### --- clean up the old stuff ------------------------------------------------
 
-cat > /boot/octopi.txt <<EOF
+cat > $BOOT_PATH/octopi.txt <<EOF
 ### IMPORTANT: Looking for the camera settings? Those are now located
 ### in the camera-streamer directory! libcamera.conf to configure the Raspberry Pi
 ### camera and usb-default.conf to configure USB cameras. Read more about it here:
@@ -85,4 +85,4 @@ rm /etc/logrotate.d/webcamd
 rm /etc/systemd/system/webcamd.service
 rm /root/bin/webcamd
 rm -rf /opt/mjpg-streamer
-rm /home/pi/mjpg-streamer
+[ -f "/home/pi/mjpg-streamer" ] && rm /home/pi/mjpg-streamer
