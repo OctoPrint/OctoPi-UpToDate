@@ -1,10 +1,21 @@
 version: "3"
 
+vars:
+  DOCKERIMG: '{{ default "ghcr.io/octoprint/custopizer:latest" .DOCKERIMG }}'
+
 tasks:
   build:
     cmds:
       - |
-        {{if eq OS "windows"}}powershell {{end}}docker run --rm --privileged -v {{.USER_WORKING_DIR | toSlash}}/workspace:/CustoPiZer/workspace -v {{.USER_WORKING_DIR | toSlash}}/scripts:/CustoPiZer/workspace/scripts ghcr.io/octoprint/custopizer:latest
+        {{if eq OS "windows"}}powershell {{end}}docker run --rm --privileged -v {{.USER_WORKING_DIR | toSlash}}/workspace:/CustoPiZer/workspace -v {{.USER_WORKING_DIR | toSlash}}/scripts:/CustoPiZer/workspace/scripts {{.DOCKERIMG}}
     preconditions:
       - test -d workspace
       - test -f workspace/input.img
+
+  inspect:
+    cmds:
+      - |
+        {{if eq OS "windows"}}powershell {{end}}docker run -it --rm --privileged -v {{.USER_WORKING_DIR | toSlash}}/workspace/output.img:/image.img {{.DOCKERIMG}} /CustoPiZer/enter_image /image.img
+    preconditions:
+      - test -d workspace
+      - test -f workspace/output.img

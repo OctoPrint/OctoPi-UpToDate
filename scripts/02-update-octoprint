@@ -8,14 +8,18 @@ install_cleanup_trap
 
 BUNDLED="OctoPrint-FileCheck OctoPrint-FirmwareCheck OctoPrint-PiSupport"
 
+USER=pi
+VENV=/opt/octopi/oprint
+[ -f $VENV ] || VENV=/home/pi/oprint
+
 if [ -n "$OCTOPRINT_VERSION" ]; then
     # fetch from GitHub since PyPI might not yet be synced through right after a fresh release
-    sudo -u pi /home/pi/oprint/bin/pip install -U https://github.com/OctoPrint/OctoPrint/archive/refs/tags/$OCTOPRINT_VERSION.zip $BUNDLED
+    sudo -u $USER $VENV/bin/pip install -U https://github.com/OctoPrint/OctoPrint/archive/refs/tags/$OCTOPRINT_VERSION.zip $BUNDLED
 else
-    sudo -u pi /home/pi/oprint/bin/pip install -U OctoPrint $BUNDLED
+    sudo -u $USER $VENV/bin/pip install -U OctoPrint $BUNDLED
 fi
 
 # make sure to mark the file check wizard as seen
 if [ $(/usr/local/bin/yq '.server.seenWizards.file_check' /home/pi/.octoprint/config.yaml) == "null" ]; then
-    sudo -u pi FILECHECK_WIZARD=$(sudo -u pi /home/pi/oprint/bin/python -c "import octoprint_file_check; print(octoprint_file_check.WIZARD_VERSION)") /usr/local/bin/yq -i '.server.seenWizards.file_check = env(FILECHECK_WIZARD)' /home/pi/.octoprint/config.yaml
+    sudo -u $USER FILECHECK_WIZARD=$(sudo -u $USER $VENV/bin/python -c "import octoprint_file_check; print(octoprint_file_check.WIZARD_VERSION)") /usr/local/bin/yq -i '.server.seenWizards.file_check = env(FILECHECK_WIZARD)' /home/pi/.octoprint/config.yaml
 fi

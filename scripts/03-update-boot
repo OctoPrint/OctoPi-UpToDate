@@ -6,7 +6,7 @@ export LC_ALL=C
 source /common.sh
 install_cleanup_trap
 
-apt-get install --yes --reinstall raspberrypi-bootloader raspberrypi-kernel
+apt-get install --yes raspberrypi-bootloader raspberrypi-kernel
 
 kernel_version=$(dpkg -s raspberrypi-kernel | grep -i version | awk '{print $2}')
 if [ "$kernel_version" = "1:1.20230317-1" ]; then
