@@ -85,4 +85,7 @@ rm /etc/logrotate.d/webcamd
 rm /etc/systemd/system/webcamd.service
 rm /root/bin/webcamd
 rm -rf /opt/mjpg-streamer
-[ -f "/home/pi/mjpg-streamer" ] && rm /home/pi/mjpg-streamer
+
+if [ -f "/home/pi/mjpg-streamer" ]; then
+    rm /home/pi/mjpg-streamer
+fi
