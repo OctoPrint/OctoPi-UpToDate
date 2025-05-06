@@ -17,11 +17,14 @@ body:
     attributes:
       label: What OctoPi-UpToDate modification is involved?
       options:
-        - 01-update-octoprint
-        - 02-update-boot
-        - 03-update-libcamera-apps
+        - 00-enforce-32bit-kernel
+        - 01-add-yq
+        - 02-update-octoprint
+        - 03-update-boot
+        - 04-update-libcamera-apps
         - 80-install-user-fix
         - 81-fix-octopi-txt
+        - 82-fix-welcome-banner
         - 99-write-build
     validations:
       required: true
