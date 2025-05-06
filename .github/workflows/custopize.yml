@@ -238,7 +238,7 @@ jobs:
         image_size: ${{ steps.package-image.outputs.image_size }}
         zip_sha256: ${{ steps.package-image.outputs.zip_sha256 }}
         zip_size: ${{ steps.package-image.outputs.zip_size }}
-        devices: "pi4-32bit,pi3-32bit,pi2-32bit,pi1-32bit"
+        devices: "pi5-32bit,pi4-32bit,pi3-32bit,pi2-32bit,pi1-32bit"
 
     - name: "🔖 Create release & attach assets"
       uses: softprops/action-gh-release@v2
