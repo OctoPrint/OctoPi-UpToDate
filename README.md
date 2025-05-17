@@ -29,7 +29,7 @@ There's a [Taskfile](https://taskfile.dev) in this repository that you can use t
 Alternatively, you can also manually run `docker`:
 
 ```
-docker run --rm --privileged -v $(pwd)/workspace:/CustoPiZer/workspace $(pwd)/scripts:/CustoPiZer/workspace/scripts ghcr.io/octoprint/custopizer:latest
+docker run --rm --privileged -v $(pwd)/workspace:/CustoPiZer/workspace -v $(pwd)/scripts:/CustoPiZer/workspace/scripts ghcr.io/octoprint/custopizer:latest
 ```
 
 ## Can I do something like this as well?
