@@ -1,0 +1,12 @@
+set -x
+set -e
+
+export LC_ALL=C
+
+source /common.sh
+install_cleanup_trap
+
+# if we already have the file updated, we don't need to do anything
+grep -q '=network.online.target' /etc/systemd/system/octoprint.service || exit 0
+
+sed -i 's#=network\.online\.target$#=network-online.target#' /etc/systemd/system/octoprint.service
