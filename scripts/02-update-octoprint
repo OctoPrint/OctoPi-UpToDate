@@ -27,5 +27,5 @@ fi
 # fixes for broken packages from piwheels
 if [[ $(sudo -u $USER $VENV/bin/python --version | cut -d' ' -f2) =~ ^3\.11\. && $(sudo -u $USER $VENV/bin/pip freeze | grep -i tornado | cut -d= -f3) == "6.4.2" ]]; then
     # fetch sdist for tornado 6.4.2 under Python 3.11
-    sudo -u $USER $VENV/bin/pip install --no-binary=tornado "tornado==6.4.2"
+    sudo -u $USER $VENV/bin/pip install --no-binary=tornado "tornado==6.4.2" --force-reinstall
 fi
