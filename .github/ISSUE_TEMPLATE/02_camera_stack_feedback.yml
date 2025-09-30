@@ -1,0 +1,51 @@
+name: "🧑‍💻 Internal: Camera Stack Feedback Ticket"
+description: Only use this issue type if you are a maintainer or collaborator of OctoPrint!
+title: "[Feedback] Feedback for the latest camera-streamer based webcam stack builds (build BUILD)"
+body:
+  - type: textarea
+    attributes:
+      label: "Feedback"
+      value: |
+        This is a ticket to collect feedback on the latest build of the new camera stack (some background on that [here](https://github.com/OctoPrint/OctoPi-UpToDate/issues/2)) for OctoPi-UpToDate. 
+        
+        Currently, that is **BUILD**. Find the image here: https://github.com/OctoPrint/OctoPi-UpToDate/releases/tag/TAG
+        
+        Config docs are available here: https://faq.octoprint.org/camera-streamer-config
+        
+        The source tree used for the build is here: https://github.com/OctoPrint/OctoPi-UpToDate/tree/camera-streamer
+        
+        ## Changelog
+        
+        ### Changes in [build BUILD](https://github.com/OctoPrint/OctoPi-UpToDate/releases/tag/TAG) from YYYY-MM-DD
+        
+        - ...
+        
+        ---
+        
+        > ❗ **Please note**
+        >
+        > This image needs to be flashed to your SD card, wiping it in the process. So if you want to keep anything on there, make a backup first! You can also create an [OctoPrint backup](https://docs.octoprint.org/en/master/bundledplugins/backup.html), download that, flash, restore from backup. There's no way to update to the contents of this image without a full reflash.
+        
+        Please provide feedback on your experience with this image in this ticket, whether things work for you or not. Make sure to *at least* include the following: 
+        
+        - Everything working?
+        - Pi model
+        - used cameras
+        - in case of issues: related logs (`journalctl -u camera-streamer\* | pb` and share the generated paste.octoprint.org URL)
+        
+        ## Known issues:
+        
+        - ayufan/camera-streamer#94 (this is currently considered a blocker for general roll-out of this camera stack, as it causes the camera stream to crash)
+        
+        ## Common pitfalls:
+        
+        - RPiV3 camera not auto-focusing? Make sure any kind of case you've added to it is not interfering with the lens & sensor
+
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: Verification
+      options:
+        - label: I'm a maintainer or collaborator of OctoPrint and allowed to use this issue type
+          required: true
