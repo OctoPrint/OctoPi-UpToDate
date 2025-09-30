@@ -6,4 +6,10 @@ export LC_ALL=C
 source /common.sh
 install_cleanup_trap
 
-apt-get install --yes --only-upgrade libcamera-apps-lite
+if [ "$(lsb_release -cs)" == "bullseye" ]; then
+  package="libcamera-apps-lite"
+else
+  package="rpicam-apps-lite"
+fi
+
+apt-get install --yes --only-upgrade $package
