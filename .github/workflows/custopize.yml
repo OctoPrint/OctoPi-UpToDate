@@ -150,9 +150,9 @@ jobs:
 
     - name: "🔎 Determine e2e branch"
       run: |
-        E2E_BRANCH="master"
+        E2E_BRANCH="main"
         if [[ "${{ env.OCTOPRINT_VERSION }}" == *"-rc"* ]]; then
-          E2E_BRANCH="maintenance"
+          E2E_BRANCH="dev"
         fi
 
         echo "E2E branch: $E2E_BRANCH"

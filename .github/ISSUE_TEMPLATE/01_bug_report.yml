@@ -24,6 +24,7 @@ body:
         - 80-install-user-fix
         - 81-fix-octopi-txt
         - 82-fix-welcome-banner
+        - 83-fix-service-dependencies
         - 99-write-build
     validations:
       required: true
