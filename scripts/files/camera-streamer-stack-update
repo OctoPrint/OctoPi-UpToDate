@@ -1,0 +1,67 @@
+#!/bin/bash
+
+set -e
+
+CHECKOUT="/opt/camera-streamer-stack"
+CONFIG="/boot/firmware/camera-streamer"
+if [ ! -d "$CONFIG" ]; then
+    CONFIG="/boot/camera-streamer"
+fi
+
+if [ ! -d "$CHECKOUT" ]; then
+    echo "Checkout folder at /opt/camera-streamer-stack does not exist"
+    exit 1
+fi
+
+if [ ! -d "$CONFIG" ]; then
+    echo "Can't locate config folder, it's neither in /boot/firmware nor in /boot."
+    exit 1
+fi
+
+pushd $CHECKOUT
+    git fetch
+    if [ $(git rev-parse HEAD) == $(git rev-parse @{u}) ]; then
+        echo "Already up to date!"
+        exit 0
+    fi
+
+    git pull
+
+    # update systemd files & scripts
+    sudo make systemd scripts
+
+    # update default configs
+    echo "Updating configs..."
+    for config in configs/*.conf; do
+        name=$(basename $config)
+        target="$CONFIG/$name"
+
+        if [ ! -e "$target" ]; then
+            sudo install --mode=0644 "$config" "$target"
+            continue
+        fi
+
+        changes=$(diff "$config" "$target" || true)
+        if [ "$changes" != "" ]; then
+            echo "$config and $target differ:"
+            echo -n "$changes"
+            echo ""
+            read -n1 -p "Overwrite your local copy? (y)es or (n)o: " overwrite
+            echo
+            if [ "$overwrite" == "y" -o "$overwrite" == "Y"]; then
+                sudo install --backup=simple --suffix=.backup --mode=0644 "$config" "$target"
+                echo "New version of $target installed, backup at $target.backup"
+            else
+                echo "Skipping $config, check manually if local copy requires any updates!"
+            fi
+        else
+            echo "$config and $target are identical, no need to update"
+        fi
+    done
+
+    echo "Reloading systemd units & restarting camera-streamer..."
+    sudo systemctl daemon-reload
+    sudo systemctl restart camera-streamer
+
+    echo "Update process complete!"
+popd

@@ -8,22 +8,24 @@ install_cleanup_trap
 
 ### --- install the new stuff -----------------------------------------------
 
+USERID=1000
+REPO=https://github.com/OctoPrint/camera-streamer-stack.git
+
 # install camera-streamer and dependencies
 apt-get install --yes camera-streamer-raspi
 
-# install units, configs & helpers
-pushd /tmp
-    apt-get install --yes v4l-utils
-    git clone https://github.com/OctoPrint/camera-streamer-stack.git
-    pushd camera-streamer-stack
-        make install
-    popd
-    rm -rf camera-streamer-stack
+# install camera-streamer-stack
+apt-get install --yes v4l-utils
+install -d --owner=$USERID /opt/camera-streamer-stack
+pushd /opt/camera-streamer-stack
+    sudo -u "#$USERID" git clone "$REPO" .
+    make CONFIG_DIR=$BOOT_PATH/camera-streamer install
+    ln -s $BOOT_PATH/camera-streamer /etc/camera-streamer.conf.d
 popd
 
-# put configs on fat partition on OctoPi
-mv /etc/camera-streamer.conf.d $BOOT_PATH/camera-streamer
-ln -s $BOOT_PATH/camera-streamer /etc/camera-streamer.conf.d
+# install update-script
+cp /files/camera-streamer-stack-update /usr/local/bin/camera-streamer-stack-update
+chmod +x /usr/local/bin/camera-streamer-stack-update
 
 # only run stack if mjpeg is selected as streamer
 for unit in camera-streamer camera-streamer-usb@ camera-streamer-libcamera; do
