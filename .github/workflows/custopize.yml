@@ -8,11 +8,11 @@ on:
       octopi_version:
         description: "OctoPi version (leave empty to use latest stable release, may also be 'version:url')"
         required: false
-        default: ''
+        default: ""
       octoprint_version:
         description: "OctoPrint version (leave empty to use latest stable release)"
         required: false
-        default: ''
+        default: ""
 
 jobs:
   build:
@@ -26,243 +26,244 @@ jobs:
       image-url: ${{ env.IMAGE_URL }}
       e2e-branch: ${{ env.E2E_BRANCH }}
     steps:
+      - name: "⬇ Checkout"
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
-    - name: "⬇ Checkout"
-      uses: actions/checkout@v4
+      - name: "🔎 Determine OctoPi version"
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let release = null;
 
-    - name: "🔎 Determine OctoPi version"
-      uses: actions/github-script@v7
-      with:
-        script: |
-          let release = null;
+            let version = '';
+            if (context.eventName === "respository_dispatch" && context.action === "octopi_release") {
+              version = context.payload.client_payload.version;
+              console.log(`Version from repository dispatch: ${version}`);
+            } else if (context.eventName === "workflow_dispatch") {
+              version = context.payload.inputs.octopi_version;
+              console.log(`Version from workflow dispatch: ${version}`);
+            }
 
-          let version = '';
-          if (context.eventName === "respository_dispatch" && context.action === "octopi_release") {
-            version = context.payload.client_payload.version;
-            console.log(`Version from repository dispatch: ${version}`);
-          } else if (context.eventName === "workflow_dispatch") {
-            version = context.payload.inputs.octopi_version;
-            console.log(`Version from workflow dispatch: ${version}`);
-          }
+            if (version && version.includes(":")) {
+              // version is in "version:url" format
+              const pos = version.indexOf(":")
+              const octopiVersion = version.slice(0, pos);
+              const octopiUrl = version.slice(pos + 1);
 
-          if (version && version.includes(":")) {
-            // version is in "version:url" format
-            const pos = version.indexOf(":")
-            const octopiVersion = version.slice(0, pos);
-            const octopiUrl = version.slice(pos + 1);
+              console.log(`OctoPi version: ${octopiVersion}`)
+              console.log(`OctoPi download URL: ${octopiUrl}`)
 
-            console.log(`OctoPi version: ${octopiVersion}`)
-            console.log(`OctoPi download URL: ${octopiUrl}`)
-
-            core.exportVariable("OCTOPI_VERSION", octopiVersion)
-            core.exportVariable("OCTOPI_URL", octopiUrl)
-
-          } else {
-            if (version) {
-              // version provided
-              console.log(`Fetching release of ${version}`);
-
-              const query = `query {
-                repository(owner: "guysoft", name: "Octopi") {
-                  release(tagName:"${version}") {
-                    tagName
-                    releaseAssets(first:5) {
-                      nodes {
-                        name
-                        downloadUrl
-                      }
-                    }
-                  }
-                }
-              }`;
-
-              const result = await github.graphql(query);
-              console.log({result});
-
-              release = result.repository.release;
+              core.exportVariable("OCTOPI_VERSION", octopiVersion)
+              core.exportVariable("OCTOPI_URL", octopiUrl)
 
             } else {
-              // no version provided
-              console.log("Fetching latest release");
+              if (version) {
+                // version provided
+                console.log(`Fetching release of ${version}`);
 
-              const query = `query {
-                repository(owner:"guysoft", name:"OctoPi") {
-                  latestRelease {
-                    tagName
-                    releaseAssets(first:5) {
-                      nodes {
-                        name
-                        downloadUrl
+                const query = `query {
+                  repository(owner: "guysoft", name: "Octopi") {
+                    release(tagName:"${version}") {
+                      tagName
+                      releaseAssets(first:5) {
+                        nodes {
+                          name
+                          downloadUrl
+                        }
                       }
                     }
                   }
-                }
-              }`;
+                }`;
 
-              const result = await github.graphql(query);
-              console.log({result});
+                const result = await github.graphql(query);
+                console.log({result});
 
-              release = result.repository.latestRelease;
-            }
+                release = result.repository.release;
 
-            if (!release || !release.tagName || !release.releaseAssets || !release.releaseAssets.nodes) core.setFailed("Could not find OctoPi release");
+              } else {
+                // no version provided
+                console.log("Fetching latest release");
 
-            const octopiVersion = release.tagName;
+                const query = `query {
+                  repository(owner:"guysoft", name:"OctoPi") {
+                    latestRelease {
+                      tagName
+                      releaseAssets(first:5) {
+                        nodes {
+                          name
+                          downloadUrl
+                        }
+                      }
+                    }
+                  }
+                }`;
 
-            let octopiUrl = null;
-            for (const asset of release.releaseAssets.nodes) {
-              if (asset.name.startsWith("octopi-") && asset.name.includes("-armhf-") && asset.name.endsWith(".zip")) {
-                octopiUrl = asset.downloadUrl;
-                break;
+                const result = await github.graphql(query);
+                console.log({result});
+
+                release = result.repository.latestRelease;
               }
+
+              if (!release || !release.tagName || !release.releaseAssets || !release.releaseAssets.nodes) core.setFailed("Could not find OctoPi release");
+
+              const octopiVersion = release.tagName;
+
+              let octopiUrl = null;
+              for (const asset of release.releaseAssets.nodes) {
+                if (asset.name.startsWith("octopi-") && asset.name.includes("-armhf-") && asset.name.endsWith(".zip")) {
+                  octopiUrl = asset.downloadUrl;
+                  break;
+                }
+              }
+
+              if (!octopiUrl) core.setFailed("Could not find OctoPi download URL");
+
+              console.log(`OctoPi version: ${octopiVersion}`)
+              console.log(`OctoPi download URL: ${octopiUrl}`)
+
+              core.exportVariable("OCTOPI_VERSION", octopiVersion)
+              core.exportVariable("OCTOPI_URL", octopiUrl)
             }
 
-            if (!octopiUrl) core.setFailed("Could not find OctoPi download URL");
+      - name: "🔎 Determine OctoPrint version"
+        run: |
+          if [[ "${{ github.event_name }}" = "repository_dispatch" && "${{ github.event.action }}" = "octoprint_release" ]]; then
+            OCTOPRINT_VERSION="${{ github.event.client_payload.version }}"
+            echo "Version from repository dispatch: $OCTOPRINT_VERSION"
+          else
+            OCTOPRINT_VERSION="${{ github.event.inputs.octoprint_version }}"
+            echo "Version from workflow dispatch: $OCTOPRINT_VERSION"
+          fi
 
-            console.log(`OctoPi version: ${octopiVersion}`)
-            console.log(`OctoPi download URL: ${octopiUrl}`)
+          if [ -z "$OCTOPRINT_VERSION" ]; then
+            OCTOPRINT_VERSION=$(curl https://pypi.org/pypi/OctoPrint/json -s | jq -r '.info.version')
+            echo "Version from PyPI: $OCTOPRINT_VERSION"
+          fi
 
-            core.exportVariable("OCTOPI_VERSION", octopiVersion)
-            core.exportVariable("OCTOPI_URL", octopiUrl)
-          }
+          # Make sure we have a published version
+          curl -fsSL --output /dev/null --head https://pypi.org/pypi/OctoPrint/$OCTOPRINT_VERSION/ || exit 1
 
-    - name: "🔎 Determine OctoPrint version"
-      run: |
-        if [[ "${{ github.event_name }}" = "repository_dispatch" && "${{ github.event.action }}" = "octoprint_release" ]]; then
-          OCTOPRINT_VERSION="${{ github.event.client_payload.version }}"
-          echo "Version from repository dispatch: $OCTOPRINT_VERSION"
-        else
-          OCTOPRINT_VERSION="${{ github.event.inputs.octoprint_version }}"
-          echo "Version from workflow dispatch: $OCTOPRINT_VERSION"
-        fi
+          echo "OctoPrint version: $OCTOPRINT_VERSION"
 
-        if [ -z "$OCTOPRINT_VERSION" ]; then
-          OCTOPRINT_VERSION=$(curl https://pypi.org/pypi/OctoPrint/json -s | jq -r '.info.version')
-          echo "Version from PyPI: $OCTOPRINT_VERSION"
-        fi
+          echo "OCTOPRINT_VERSION=$OCTOPRINT_VERSION" >> $GITHUB_ENV
 
-        # Make sure we have a published version
-        curl -fsSL --output /dev/null --head https://pypi.org/pypi/OctoPrint/$OCTOPRINT_VERSION/ || exit 1
+      - name: "🔎 Determine e2e branch"
+        run: |
+          E2E_BRANCH="main"
+          if [[ "${{ env.OCTOPRINT_VERSION }}" == *"-rc"* ]]; then
+            E2E_BRANCH="dev"
+          fi
 
-        echo "OctoPrint version: $OCTOPRINT_VERSION"
+          echo "E2E branch: $E2E_BRANCH"
 
-        echo "OCTOPRINT_VERSION=$OCTOPRINT_VERSION" >> $GITHUB_ENV
+          echo "E2E_BRANCH=$E2E_BRANCH" >> $GITHUB_ENV
 
-    - name: "🔎 Determine e2e branch"
-      run: |
-        E2E_BRANCH="main"
-        if [[ "${{ env.OCTOPRINT_VERSION }}" == *"-rc"* ]]; then
-          E2E_BRANCH="dev"
-        fi
+      - name: "⬇ Download OctoPi"
+        id: octopi_download
+        run: |
+          mkdir build
+          cd build
+          curl -L -o octopi.zip ${{ env.OCTOPI_URL }}
 
-        echo "E2E branch: $E2E_BRANCH"
+          unzip octopi.zip
+          rm octopi.zip
 
-        echo "E2E_BRANCH=$E2E_BRANCH" >> $GITHUB_ENV
-  
-    - name: "⬇ Download OctoPi"
-      id: octopi_download
-      run: |
-        mkdir build
-        cd build
-        curl -L -o octopi.zip ${{ env.OCTOPI_URL }}
+          IMAGE=$(ls *.img | head -n 1)
+          mv $IMAGE input.img
 
-        unzip octopi.zip
-        rm octopi.zip
+      - name: "📝 Prepare release"
+        run: |
+          now=$(date +"%Y%m%d%H%M%S")
 
-        IMAGE=$(ls *.img | head -n 1)
-        mv $IMAGE input.img
+          RELEASE_BUILD="build $now"
+          [ "$GITHUB_REF_NAME" != "main" ] && RELEASE_BUILD="$RELEASE_BUILD from branch $GITHUB_REF_NAME"
 
-    - name: "📝 Prepare release"
-      run: |
-        now=$(date +"%Y%m%d%H%M%S")
+          RELEASE_NAME="OctoPi ${{ env.OCTOPI_VERSION }} with OctoPrint ${{ env.OCTOPRINT_VERSION }} ($RELEASE_BUILD)"
+          echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
 
-        RELEASE_BUILD="build $now"
-        [ "$GITHUB_REF_NAME" != "main" ] && RELEASE_BUILD="$RELEASE_BUILD from branch $GITHUB_REF_NAME"
+          RELEASE_TAG="${{ env.OCTOPI_VERSION }}-${{ env.OCTOPRINT_VERSION }}-$now"
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
 
-        RELEASE_NAME="OctoPi ${{ env.OCTOPI_VERSION }} with OctoPrint ${{ env.OCTOPRINT_VERSION }} ($RELEASE_BUILD)"
-        echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
+          # release body
 
-        RELEASE_TAG="${{ env.OCTOPI_VERSION }}-${{ env.OCTOPRINT_VERSION }}-$now"
-        echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
+          cat <<EOF > ./build/release.md
 
-        # release body
+            * OctoPi ${{ env.OCTOPI_VERSION }}
+            * OctoPrint ${{ env.OCTOPRINT_VERSION }}
+            * Latest versions of the bundled OctoPrint plugins
+            * Latest kernel & bootloader
+            * Latest libcamera-apps
+            * New camera-streamer based webcam stack
 
-        cat <<EOF > ./build/release.md
+          Created with [CustoPiZer](https://github.com/OctoPrint/CustoPiZer)
 
-          * OctoPi ${{ env.OCTOPI_VERSION }}
-          * OctoPrint ${{ env.OCTOPRINT_VERSION }}
-          * Latest versions of the bundled OctoPrint plugins
-          * Latest kernel & bootloader
-          * Latest libcamera-apps
-          * New camera-streamer based webcam stack
+          <!-- mark:untested -->
+          EOF
 
-        Created with [CustoPiZer](https://github.com/OctoPrint/CustoPiZer)
+          [ "$GITHUB_REF_NAME" != "main" ] && cat <<EOF >> ./build/release.md
 
-        <!-- mark:untested -->
-        EOF
+          <!-- mark:ignored -->
+          EOF
 
-        [ "$GITHUB_REF_NAME" != "main" ] && cat <<EOF >> ./build/release.md
+      - name: "🏗 Run CustoPiZer"
+        uses: OctoPrint/CustoPiZer@v1
+        with:
+          workspace: "${{ github.workspace }}/build"
+          scripts: "${{ github.workspace }}/scripts"
+          environment: '{ "OCTOPRINT_VERSION": "${{ env.OCTOPRINT_VERSION }}", "RELEASE_TAG": "${{ env.RELEASE_TAG }}" }'
 
-        <!-- mark:ignored -->
-        EOF
+      - name: "✏ Rename image"
+        run: |
+          RELEASE_TAG="${{ env.RELEASE_TAG }}"
 
-    - name: "🏗 Run CustoPiZer"
-      uses: OctoPrint/CustoPiZer@v1
-      with:
-        workspace: "${{ github.workspace }}/build"
-        scripts:  "${{ github.workspace }}/scripts"
-        environment: '{ "OCTOPRINT_VERSION": "${{ env.OCTOPRINT_VERSION }}", "RELEASE_TAG": "${{ env.RELEASE_TAG }}" }'
+          IMAGE="octopi-$RELEASE_TAG.img"
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
-    - name: "✏ Rename image"
-      run: |
-        RELEASE_TAG="${{ env.RELEASE_TAG }}"
+          cd build
+          mv output.img $IMAGE
 
-        IMAGE="octopi-$RELEASE_TAG.img"
-        echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+      - name: "📦 Package the image"
+        id: package-image
+        uses: OctoPrint/actions/package-rpi-image@main
+        with:
+          image_path: "build/${{ env.IMAGE }}"
 
-        cd build
-        mv output.img $IMAGE
+      - name: 📨 Export zip name and URL to env
+        run: |
+          echo "IMAGE_ZIP=${{ steps.package-image.outputs.zip_name }}" >> $GITHUB_ENV
+          echo "IMAGE_URL=https://github.com/OctoPrint/OctoPi-UpToDate/releases/download/${{ env.RELEASE_TAG }}/${{ steps.package-image.outputs.zip_name }}" >> $GITHUB_ENV
 
-    - name: "📦 Package the image"
-      id: package-image
-      uses: OctoPrint/actions/package-rpi-image@main
-      with:
-        image_path: "build/${{ env.IMAGE }}"
+      - name: "🆕 Generate rpi-imager.json snippet"
+        uses: OctoPrint/actions/rpi-imager-snippet@main
+        with:
+          name: "${{ env.RELEASE_NAME }}"
+          description: "A Raspberry Pi distribution for 3d printers. Ships OctoPrint ${{ env.OCTOPRINT_VERSION }} out-of-the-box."
+          icon: "https://octopi.octoprint.org/rpi-imager.png"
+          url: "${{ env.IMAGE_URL }}"
+          output: "build/rpi-imager.json"
+          image_sha256: ${{ steps.package-image.outputs.image_sha256 }}
+          image_size: ${{ steps.package-image.outputs.image_size }}
+          zip_sha256: ${{ steps.package-image.outputs.zip_sha256 }}
+          zip_size: ${{ steps.package-image.outputs.zip_size }}
+          devices: "pi5-32bit,pi4-32bit,pi3-32bit,pi2-32bit,pi1-32bit"
 
-    - name: 📨 Export zip name and URL to env
-      run: |
-        echo "IMAGE_ZIP=${{ steps.package-image.outputs.zip_name }}" >> $GITHUB_ENV
-        echo "IMAGE_URL=https://github.com/OctoPrint/OctoPi-UpToDate/releases/download/${{ env.RELEASE_TAG }}/${{ steps.package-image.outputs.zip_name }}" >> $GITHUB_ENV
-
-    - name: "🆕 Generate rpi-imager.json snippet"
-      uses: OctoPrint/actions/rpi-imager-snippet@main
-      with:
-        name: "${{ env.RELEASE_NAME }}"
-        description: "A Raspberry Pi distribution for 3d printers. Ships OctoPrint ${{ env.OCTOPRINT_VERSION }} out-of-the-box."
-        icon: "https://octopi.octoprint.org/rpi-imager.png"
-        url: "${{ env.IMAGE_URL }}"
-        output: "build/rpi-imager.json"
-        image_sha256: ${{ steps.package-image.outputs.image_sha256 }}
-        image_size: ${{ steps.package-image.outputs.image_size }}
-        zip_sha256: ${{ steps.package-image.outputs.zip_sha256 }}
-        zip_size: ${{ steps.package-image.outputs.zip_size }}
-        devices: "pi5-32bit,pi4-32bit,pi3-32bit,pi2-32bit,pi1-32bit"
-
-    - name: "🔖 Create release & attach assets"
-      uses: softprops/action-gh-release@v2.2.2  # 2025-06-10: v2 is currently broken
-      with:
-        name: "${{ env.RELEASE_NAME }}"
-        tag_name: "${{ env.RELEASE_TAG }}"
-        body_path: "build/release.md"
-        prerelease: ${{ github.ref != 'refs/heads/main' || contains(env.OCTOPRINT_VERSION, 'rc') || contains(env.OCTOPI_VERSION, 'rc') }}
-        fail_on_unmatched_files: true
-        files: |
-          build/${{ env.IMAGE_ZIP }}
-          build/${{ env.IMAGE_ZIP }}.md5
-          build/${{ env.IMAGE_ZIP }}.sha256
-          build/rpi-imager.json
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: "🔖 Create release & attach assets"
+        uses: softprops/action-gh-release@v2.2.2 # 2025-06-10: v2 is currently broken
+        with:
+          name: "${{ env.RELEASE_NAME }}"
+          tag_name: "${{ env.RELEASE_TAG }}"
+          body_path: "build/release.md"
+          prerelease: ${{ github.ref != 'refs/heads/main' || contains(env.OCTOPRINT_VERSION, 'rc') || contains(env.OCTOPI_VERSION, 'rc') }}
+          fail_on_unmatched_files: true
+          files: |
+            build/${{ env.IMAGE_ZIP }}
+            build/${{ env.IMAGE_ZIP }}.md5
+            build/${{ env.IMAGE_ZIP }}.sha256
+            build/rpi-imager.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test:
     name: "Test"
@@ -293,7 +294,6 @@ jobs:
     needs: [build, test]
     environment: live
     steps:
-
       - uses: actions/github-script@v7
         name: "✔ Mark release as tested"
         env:
