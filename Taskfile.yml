@@ -2,20 +2,23 @@ version: "3"
 
 vars:
   DOCKERIMG: '{{ default "ghcr.io/octoprint/custopizer:latest" .DOCKERIMG }}'
+  OCTOPRINT_APT_REPO: '{{ default "" .OCTOPRINT_APT_REPO }}'
 
 tasks:
   build:
     cmds:
       - |
-        {{if eq OS "windows"}}powershell {{end}}docker run --rm --privileged -v {{.USER_WORKING_DIR | toSlash}}/workspace:/CustoPiZer/workspace -v {{.USER_WORKING_DIR | toSlash}}/scripts:/CustoPiZer/workspace/scripts {{.DOCKERIMG}}
+        docker run --rm --privileged -e OCTOPRINT_APT_REPO={{.OCTOPRINT_APT_REPO}} -v {{.USER_WORKING_DIR | toSlash}}/workspace:/CustoPiZer/workspace -v {{.USER_WORKING_DIR | toSlash}}/scripts:/CustoPiZer/workspace/scripts {{.DOCKERIMG}}
     preconditions:
       - test -d workspace
       - test -f workspace/input.img
+      - lsmod | grep '\bloop\b'
 
   inspect:
     cmds:
       - |
-        {{if eq OS "windows"}}powershell {{end}}docker run -it --rm --privileged -v {{.USER_WORKING_DIR | toSlash}}/workspace/output.img:/image.img {{.DOCKERIMG}} /CustoPiZer/enter_image /image.img
+        docker run -it --rm --privileged -v {{.USER_WORKING_DIR | toSlash}}/workspace/output.img:/image.img {{.DOCKERIMG}} /CustoPiZer/enter_image /image.img
     preconditions:
       - test -d workspace
       - test -f workspace/output.img
+      - lsmod | grep '\bloop\b'

@@ -6,6 +6,8 @@ export LC_ALL=C
 source /common.sh
 install_cleanup_trap
 
-curl -s --compressed "https://apt.octoprint.org/octoprint.gpg.key" | gpg --dearmor > /etc/apt/trusted.gpg.d/octoprint.gpg
-echo "deb https://apt.octoprint.org/debian $(lsb_release -cs) rpi" > /etc/apt/sources.list.d/octoprint-rpi.list
+URL=${OCTOPRINT_APT_REPO:-"https://apt.octoprint.org"}
+
+curl -s --compressed "$URL/octoprint.gpg.key" | gpg --dearmor > /etc/apt/trusted.gpg.d/octoprint.gpg
+echo "deb $URL/debian $(lsb_release -cs) rpi" > /etc/apt/sources.list.d/octoprint-rpi.list
 apt-get update
