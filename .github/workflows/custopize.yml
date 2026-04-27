@@ -161,7 +161,7 @@ jobs:
         run: |
           E2E_BRANCH="main"
           if [[ "${OCTOPRINT_VERSION}" == *"rc"* ]]; then
-            E2E_BRANCH="dev"
+            E2E_BRANCH="next"
           fi
 
           echo "E2E branch: $E2E_BRANCH"
