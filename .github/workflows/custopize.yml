@@ -160,7 +160,7 @@ jobs:
       - name: "🔎 Determine e2e branch"
         run: |
           E2E_BRANCH="main"
-          if [[ "${OCTOPRINT_VERSION}" == *"-rc"* ]]; then
+          if [[ "${OCTOPRINT_VERSION}" == *"rc"* ]]; then
             E2E_BRANCH="dev"
           fi
 
